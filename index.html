@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Кегель-таймер</title>
+<meta name="description" content="Тренажёр Кегеля: циклы напряжения и расслабления, программа уровней, серия тренировок и статистика.">
+<meta name="theme-color" content="#121212">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23121212'/%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2343dd82' stroke-width='7' stroke-dasharray='99 33' stroke-linecap='round' transform='rotate(-90 32 32)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
@@ -18,7 +21,14 @@
 body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100dvh;
   display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
   user-select:none;overflow-x:hidden}
+:focus-visible{outline:2px solid var(--text);outline-offset:3px;border-radius:6px}
 
+/* ---------- Появление при загрузке ---------- */
+header,main{transition:opacity .8s ease,transform .8s ease}
+body.boot header{opacity:0;transform:translateY(-14px)}
+body.boot main{opacity:0;transform:translateY(16px)}
+
+/* ---------- Фоновые слои ---------- */
 .bg-layer{position:fixed;inset:0;z-index:0;opacity:0;pointer-events:none}
 #bgRed{background:radial-gradient(120% 90% at 50% 18%,#571616 0%,#3a0d0d 55%,#240707 100%)}
 #bgGreen{background:radial-gradient(120% 90% at 50% 18%,#14522a 0%,#0d3a1a 55%,#062411 100%)}
@@ -27,6 +37,7 @@ body.tense #bgGreen{animation:layerOut .8s ease forwards}
 body.relax #bgGreen{animation:layerIn .8s ease forwards}
 body.relax #bgRed{animation:layerOut .8s ease forwards}
 body.rest #bgRed,body.rest #bgGreen,
+body.prep #bgRed,body.prep #bgGreen,
 body.resetting #bgRed,body.resetting #bgGreen{animation:layerOut .8s ease forwards}
 @keyframes layerIn{from{opacity:0}to{opacity:1}}
 @keyframes layerOut{from{opacity:1}to{opacity:0}}
@@ -41,6 +52,7 @@ body.tense .particles i{background:#ff8a7e}
 body.relax .particles i{background:#7de8a8}
 @keyframes rise{to{transform:translateY(-112vh)}}
 
+/* ---------- Шапка ---------- */
 header{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;
   gap:14px;padding:20px clamp(16px,4vw,36px);flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-size:.9rem;
@@ -60,9 +72,11 @@ body.relax .dot{background:var(--green);box-shadow:0 0 14px rgba(67,221,130,.8)}
 .icon-btn:hover{background:rgba(255,255,255,.11);transform:translateY(-1px)}
 .icon-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
+.icon-btn .q{font:800 1.05rem var(--fb)}
 
+/* ---------- Сцена ---------- */
 main{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:28px;padding:8px 20px 34px}
+  justify-content:center;gap:26px;padding:8px 20px 32px}
 .stage{position:relative;display:grid;place-items:center}
 .aura{position:absolute;width:clamp(300px,84vmin,450px);aspect-ratio:1;border-radius:50%;
   filter:blur(34px);opacity:.3;background:#3a3a40;pointer-events:none;
@@ -70,6 +84,7 @@ main{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align
 body.tense .aura{background:#c22f22;animation:auraTense 1.1s ease-in-out infinite}
 body.relax .aura{background:#1f9d5c;animation:auraRelax 4s ease-in-out infinite}
 body.rest .aura{background:#4a4a52;animation:auraRelax 3.5s ease-in-out infinite}
+body.prep .aura{background:#cfcabc;animation:auraRelax 2s ease-in-out infinite}
 @keyframes auraTense{50%{transform:scale(.92)}}
 @keyframes auraRelax{50%{transform:scale(1.08)}}
 
@@ -90,6 +105,8 @@ body.relax .breath{animation:breath 4s ease-in-out infinite}
   box-shadow:0 30px 70px -25px rgba(0,0,0,.85);display:grid;place-items:center}
 body.tense .orb{animation:shake .3s linear infinite,glowRed .8s ease forwards}
 body.relax .orb{animation:glowGreen .8s ease forwards}
+body.prep .orb{animation:prepPulse 1s ease-in-out infinite}
+@keyframes prepPulse{50%{transform:scale(1.02)}}
 @keyframes shake{
   0%,100%{transform:translate(0,0)}
   20%{transform:translate(-1.6px,1px)}
@@ -108,6 +125,7 @@ body.relax .orb{animation:glowGreen .8s ease forwards}
 body.tense .ring-fg{stroke:var(--red)}
 body.relax .ring-fg{stroke:var(--green)}
 body.rest .ring-fg{stroke:#9a958b}
+body.prep .ring-fg{stroke:#e8e6e1}
 .orb-wrap.warn .ring-fg{stroke:var(--warn)!important;
   filter:drop-shadow(0 0 6px rgba(255,215,94,.85))}
 
@@ -117,10 +135,14 @@ body.rest .ring-fg{stroke:#9a958b}
 body.tense .status{color:var(--red)}
 body.relax .status{color:var(--green)}
 body.rest .status{color:#cfcabc}
+body.prep .status{color:var(--text)}
 .time{font-family:var(--fd);font-weight:800;font-size:clamp(3rem,15vmin,4.5rem);
-  line-height:1.05;font-variant-numeric:tabular-nums}
+  line-height:1.05;font-variant-numeric:tabular-nums;transition:color .25s ease}
+.counting .time{color:var(--warn);animation:timePulse 1s ease-in-out infinite}
+@keyframes timePulse{50%{transform:scale(1.05)}}
 .hint{margin-top:8px;font-size:.85rem;color:var(--muted)}
 
+/* ---------- Прогресс ---------- */
 .progress-zone{width:min(420px,88vw);display:flex;flex-direction:column;gap:10px}
 .cycle{text-align:center;font-size:.85rem;font-weight:600;letter-spacing:.12em;
   text-transform:uppercase;color:var(--muted)}
@@ -129,6 +151,7 @@ body.rest .status{color:#cfcabc}
   background:linear-gradient(90deg,var(--red),#f7b267 50%,var(--green))}
 .bar-ticks{position:absolute;inset:0}
 
+/* ---------- Кнопки ---------- */
 .controls{display:flex;gap:14px}
 .btn{font-family:var(--fb);font-weight:800;font-size:1.05rem;border:0;cursor:pointer;
   border-radius:16px;padding:18px 38px;min-width:170px;color:var(--text);letter-spacing:.02em;
@@ -155,6 +178,7 @@ body.rest .status{color:#cfcabc}
 body.paused .pause-tag{opacity:1}
 body.paused *,body.paused *::before,body.paused *::after{animation-play-state:paused!important}
 
+/* ---------- Модальные окна ---------- */
 .modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:18px;
   background:rgba(10,12,10,.72);backdrop-filter:blur(7px);
   opacity:0;visibility:hidden;transition:opacity .4s ease,visibility .4s ease}
@@ -184,7 +208,7 @@ fieldset:disabled{opacity:.35}
 .prog-info{margin-top:12px;font-size:.82rem;line-height:1.5;color:#8ff0b6;
   background:rgba(67,221,130,.08);border:1px solid rgba(67,221,130,.2);
   border-radius:12px;padding:10px 14px}
-.fineprint{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.45}
+.fineprint{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.5}
 .remind-row{flex-direction:row;align-items:center;gap:10px}
 input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
   color:var(--text);border-radius:10px;padding:9px 12px;font:600 .9rem var(--fb)}
@@ -193,9 +217,15 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 .stats3>div{flex:1;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);
   border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;gap:4px;
   align-items:center;text-align:center}
-.stats3 b{font-family:var(--fd);font-size:1rem}
-.stats3 span{font-size:.64rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
+.stats3 b{font-family:var(--fd);font-size:.95rem}
+.stats3 span{font-size:.62rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
 .last-session{font-size:.8rem;color:var(--muted);margin-top:14px;line-height:1.5}
+
+.log{display:flex;flex-direction:column;gap:6px}
+.log .row{display:flex;justify-content:space-between;gap:8px;font-size:.76rem;
+  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;padding:8px 12px;color:var(--muted)}
+.log .row b{color:var(--text);font-weight:700;white-space:nowrap}
 
 .weeks{display:flex;align-items:flex-end;gap:6px;height:90px}
 .wk{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
@@ -218,14 +248,29 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
   border-radius:50%;background:var(--green)}
 .cal .d.today{outline:1px solid rgba(255,255,255,.4)}
 
-.done-card{text-align:center}
+/* ---------- Онбординг ---------- */
+.intro p{font-size:.88rem;color:var(--muted);line-height:1.6;margin-top:8px}
+.intro .lead{color:var(--text);font-size:.95rem}
+.intro h4{margin:18px 0 4px;font-size:.74rem;letter-spacing:.25em;text-transform:uppercase;
+  color:#8ff0b6;font-weight:800}
+.intro ul{margin:6px 0 4px 18px;font-size:.85rem;color:var(--muted);line-height:1.65}
+
+/* ---------- Экран успеха ---------- */
+.done-card{text-align:center;position:relative;overflow:visible}
 .done-badge{width:62px;height:62px;margin:4px auto 16px;border-radius:50%;display:grid;
   place-items:center;font-size:1.7rem;color:#0d3a1a;background:var(--green);
-  box-shadow:0 12px 30px -8px rgba(67,221,130,.5)}
+  box-shadow:0 12px 30px -8px rgba(67,221,130,.5);position:relative;z-index:1}
 .done-card h2{font-family:var(--fd);font-weight:800;font-size:1.3rem;margin-bottom:10px}
 .done-card p{color:var(--muted);font-size:.9rem;line-height:1.55}
 .done-extra{margin-top:10px}
 .cmp{font-size:.78rem;color:#8ff0b6;margin-top:12px}
+.celebrate{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:0}
+.celebrate i{position:absolute;width:110px;height:110px;border-radius:50%;
+  border:2px solid rgba(67,221,130,.65);opacity:0;transform:scale(.4)}
+.modal.show .celebrate i{animation:celeb 1.7s ease-out forwards}
+.modal.show .celebrate i:nth-child(2){animation-delay:.28s}
+.modal.show .celebrate i:nth-child(3){animation-delay:.56s}
+@keyframes celeb{0%{opacity:.85;transform:scale(.4)}100%{opacity:0;transform:scale(3.2)}}
 
 @media (max-width:560px){
   .controls{width:100%;max-width:420px}
@@ -235,10 +280,11 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 @media (prefers-reduced-motion:reduce){
   body.tense .orb{animation:glowRed .8s ease forwards}
   .particles{display:none}
+  .celebrate{display:none}
 }
 </style>
 </head>
-<body>
+<body class="boot">
 
 <div class="bg-layer" id="bgGreen"></div>
 <div class="bg-layer" id="bgRed"></div>
@@ -250,6 +296,7 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
   <div class="brand"><span class="dot"></span>Кегель·Таймер</div>
   <div class="head-actions">
     <span class="streak-chip" id="streakChip">Серия: 0 дн.</span>
+    <button class="icon-btn" id="helpBtn" title="Справка" aria-label="Справка"><span class="q">?</span></button>
     <button class="icon-btn" id="histBtn" title="История" aria-label="История">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
     </button>
@@ -268,13 +315,13 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
     <div class="orb-wrap" id="orbWrap">
       <div class="breath"></div>
       <div class="orb" id="orb">
-        <svg class="ring" viewBox="0 0 100 100">
+        <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
           <circle class="ring-bg" cx="50" cy="50" r="46"></circle>
           <circle class="ring-fg" id="ringFg" cx="50" cy="50" r="46"></circle>
         </svg>
         <div class="orb-text">
-          <div class="status" id="statusLabel">Готовы?</div>
-          <div class="time" id="timeLabel">12×</div>
+          <div class="status" id="statusLabel" aria-live="polite">Готовы?</div>
+          <div class="time" id="timeLabel" role="timer">12×</div>
           <div class="hint" id="hintLabel">Нажмите «Старт», чтобы начать</div>
         </div>
       </div>
@@ -282,7 +329,7 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
   </div>
 
   <div class="progress-zone">
-    <div class="cycle" id="cycleLabel">Цикл: 0 / 12</div>
+    <div class="cycle" id="cycleLabel" aria-live="polite">Цикл: 0 / 12</div>
     <div class="bar"><div class="bar-fill" id="barFill"></div><div class="bar-ticks" id="barTicks"></div></div>
   </div>
 
@@ -291,8 +338,32 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
     <button class="btn ghost" id="btnPause" disabled>Пауза</button>
   </div>
   <p class="note" id="noteLabel"></p>
-  <p class="note dim">Пробел — пауза · R — сброс · F — полный экран · двойной тап по кругу — пауза</p>
+  <p class="note dim">Пробел — пауза · R — сброс · F — экран · двойной тап по кругу — пауза</p>
 </main>
+
+<!-- Онбординг -->
+<div class="modal" id="introModal">
+  <div class="card intro">
+    <div class="card-head"><h3>Добро пожаловать</h3></div>
+    <p class="lead">Это тренажёр Кегеля: чередование циклов напряжения и расслабления. Регулярные занятия укрепляют мышцы тазового дна, улучшают контроль и кровообращение.</p>
+    <h4>Техника</h4>
+    <ul>
+      <li>Найдите нужные мышцы: один раз попробуйте остановить мочеиспускание на середине — это они. Само упражнение выполняйте в обычное время.</li>
+      <li>Сжимайте плавно, без рывков, и полностью расслабляйтесь — фаза расслабления не менее важна.</li>
+      <li>Дышите свободно, не задерживайте дыхание; живот, ягодицы и бёдра остаются расслабленными.</li>
+    </ul>
+    <h4>Как проходит сессия</h4>
+    <ul>
+      <li>Красный фон и дрожащий круг — напрягайтесь. Зелёный — расслабляйтесь. Серый — отдых.</li>
+      <li>Перед каждой сменой фазы идёт отсчёт 3-2-1.</li>
+      <li>Пауза: кнопка «Пауза», пробел или двойной тап по кругу.</li>
+    </ul>
+    <h4>Регулярность</h4>
+    <p>Эффект заметен через 3–6 недель ежедневных занятий. Серия дней и режим «Программа» с ростом сложности помогают держать ритм.</p>
+    <p class="fineprint">Приложение не является медицинским изделием. При болях, острых воспалениях или после операций проконсультируйтесь с врачом.</p>
+    <button class="btn primary wide" data-close>Начать тренировки</button>
+  </div>
+</div>
 
 <!-- Настройки -->
 <div class="modal" id="settingsModal">
@@ -349,6 +420,11 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
         <button data-v="1">Вкл</button><button data-v="0">Выкл</button>
       </div>
     </div>
+    <div class="opt"><label>Фоновая подложка (эмбиент)</label>
+      <div class="seg" id="segAmb">
+        <button data-v="1">Вкл</button><button data-v="0">Выкл</button>
+      </div>
+    </div>
 
     <div class="sep"></div>
 
@@ -373,11 +449,19 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
     <div class="card-head"><h3>История</h3>
       <button class="icon-btn" data-close aria-label="Закрыть">✕</button></div>
     <div class="stats3">
-      <div><b id="hTotal">0</b><span>всего</span></div>
+      <div><b id="hTotal">0</b><span>сессий</span></div>
       <div><b id="hStreak">0</b><span>серия, дн.</span></div>
+      <div><b id="hBest">0</b><span>рекорд серии</span></div>
+    </div>
+    <div class="stats3">
+      <div><b id="hCycles">0</b><span>циклов всего</span></div>
+      <div><b id="hTime">0 с</b><span>времени всего</span></div>
       <div><b id="hLast">—</b><span>последняя</span></div>
     </div>
     <p class="last-session" id="lastSessionInfo"></p>
+    <div class="opt"><label>Последние сессии</label>
+      <div class="log" id="logList"></div>
+    </div>
     <div class="opt"><label>Активность за 8 недель</label>
       <div class="weeks" id="weeksChart"></div>
     </div>
@@ -393,6 +477,7 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 <!-- Успех -->
 <div class="modal" id="doneOverlay">
   <div class="card done-card">
+    <div class="celebrate"><i></i><i></i><i></i></div>
     <div class="done-badge">✓</div>
     <h2>Тренировка завершена</h2>
     <p>Все циклы выполнены. Результат сохранён в историю.</p>
@@ -413,7 +498,7 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 <script>
 (() => {
 'use strict';
-const HKEY='kegel_history_v1',SKEY='kegel_settings_v1',LKEY='kegel_lastsession_v1';
+const HKEY='kegel_history_v1',SKEY='kegel_settings_v1',SEEN='kegel_seen_v1';
 const $=id=>document.getElementById(id);
 const body=document.body;
 const statusLabel=$('statusLabel'),timeLabel=$('timeLabel'),hintLabel=$('hintLabel');
@@ -424,13 +509,13 @@ const CIRC=2*Math.PI*46;
 ringFg.style.strokeDasharray=CIRC;
 ringFg.style.strokeDashoffset=CIRC;
 
-let state='idle',phase='tension',dur=0;
-let remainingMs=0,lastTick=0,timerId=null,sessionMs=0,warnT=null;
+let state='idle',phase='prep',dur=0;
+let remainingMs=0,lastTick=0,timerId=null,sessionMs=0,warnT=null,lastCountSec=99;
 let sessionCfg=null,steps=[],si=-1,curStep=null,tensionSum=0,tensionCnt=0;
 
 /* ---------- Настройки ---------- */
 const DEF={mode:'free',preset:'std',cycles:12,min:5,max:15,
-  rest:0,warm:true,sound:'high',vib:true,remind:false,remindTime:'20:00'};
+  rest:0,warm:true,sound:'high',vib:true,ambient:true,remind:false,remindTime:'20:00'};
 const PRESETS={std:[5,15],fast:[3,6],end:[10,15]};
 function loadSettings(){
   try{const s=JSON.parse(localStorage.getItem(SKEY));
@@ -440,7 +525,7 @@ function loadSettings(){
 let settings=loadSettings();
 function saveSettings(){try{localStorage.setItem(SKEY,JSON.stringify(settings));}catch(e){}}
 function programCfg(){
-  const lvl=Math.floor(loadHist().length/3);
+  const lvl=Math.floor(histDates().length/3);
   return{lvl,min:Math.min(5+lvl,12),max:Math.min(8+lvl*2,18),cycles:Math.min(8+lvl*2,20)};
 }
 function getConfig(){
@@ -451,7 +536,7 @@ function getConfig(){
   return{min:settings.min,max:settings.max,cycles:settings.cycles,lvl:null};
 }
 
-/* ---------- Звук и вибрация ---------- */
+/* ---------- Аудио ---------- */
 let AC=null;
 function ctx(){
   if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(C)AC=new C();}
@@ -470,7 +555,54 @@ function beep(f,d=.15,type='sine',g=.15){
     o.start();o.stop(c.currentTime+d+.02);
   }catch(e){}
 }
-function chime(){[523,659,784].forEach((f,i)=>setTimeout(()=>beep(f,.35,'sine',.2),i*170));}
+function swellTension(){
+  beep(392,.14,'triangle',.14);
+  setTimeout(()=>beep(587.3,.3,'triangle',.16),120);
+  vib(70);
+}
+function swellRelax(){
+  beep(587.3,.2,'sine',.13);
+  setTimeout(()=>beep(293.7,.65,'sine',.13),150);
+  vib(35);
+}
+function restSound(){beep(440,.18,'sine',.1);vib(20);}
+function prepSound(){beep(520,.12,'sine',.08);}
+function tickSound(){beep(1245,.045,'square',.06);}
+function chimeBig(){
+  [523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>{
+    beep(f,.9,'sine',.16);beep(f*2,.5,'sine',.05);
+  },i*190));
+  setTimeout(()=>beep(130.8,2.4,'sine',.09),350);
+}
+
+/* ---------- Эмбиент ---------- */
+let amb=null;
+function ambientStart(){
+  const c=ctx();if(!c||amb||!settings.ambient)return;
+  try{
+    const g=c.createGain();g.gain.value=0;
+    const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=320;f.Q.value=.4;
+    const mk=(fr,ty,vol)=>{const o=c.createOscillator(),gg=c.createGain();
+      o.type=ty;o.frequency.value=fr;gg.gain.value=vol;
+      o.connect(gg);gg.connect(f);o.start();return o;};
+    const o1=mk(110,'sine',1),o2=mk(164.81,'sine',.8),o3=mk(220,'triangle',.25);
+    f.connect(g);g.connect(c.destination);
+    amb={g,f,oscs:[o1,o2,o3]};
+    g.gain.linearRampToValueAtTime(.045,c.currentTime+1.6);
+  }catch(e){amb=null;}
+}
+function ambientPhase(k){
+  if(!amb)return;const c=ctx();const t=c.currentTime;
+  if(k==='tension'){amb.f.frequency.setTargetAtTime(720,t,.5);amb.g.gain.setTargetAtTime(.06,t,.5);}
+  else{amb.f.frequency.setTargetAtTime(300,t,.7);amb.g.gain.setTargetAtTime(.04,t,.7);}
+}
+function ambientStop(){
+  if(!amb)return;const a=amb;amb=null;
+  try{const c=ctx();a.g.gain.setTargetAtTime(0,c.currentTime,.6);
+    setTimeout(()=>a.oscs.forEach(o=>{try{o.stop();}catch(e){}}),2200);
+  }catch(e){}
+}
+
 function vib(p){if(!settings.vib)return;try{navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
 
 let wakeLock=null;
@@ -485,33 +617,66 @@ document.addEventListener('visibilitychange',()=>{
 /* ---------- История ---------- */
 const pad=n=>String(n).padStart(2,'0');
 const isoOf=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-function loadHist(){try{return JSON.parse(localStorage.getItem(HKEY))||[];}catch(e){return[];}}
+function loadHist(){try{const h=JSON.parse(localStorage.getItem(HKEY));return Array.isArray(h)?h:[];}catch(e){return[];}}
+function histDates(){return loadHist().map(e=>typeof e==='string'?e:e.d);}
 function fmtDate(iso){const[y,m,d]=iso.split('-');return `${d}.${m}.${y}`;}
-function fmtDur(s){return s>=60?`${Math.floor(s/60)} мин ${s%60} с`:`${s} с`;}
-function saveToday(){
-  const h=loadHist();h.push(isoOf(new Date()));
+function fmtDur(s){
+  if(s>=3600)return `${Math.floor(s/3600)} ч ${Math.floor((s%3600)/60)} мин`;
+  if(s>=60)return `${Math.floor(s/60)} мин ${s%60} с`;
+  return `${s} с`;
+}
+function saveSession(summary){
+  const h=loadHist();h.push({d:isoOf(new Date()),...summary});
   try{localStorage.setItem(HKEY,JSON.stringify(h));}catch(e){}
   renderHistory();
   return h;
 }
 function calcStreak(){
-  const set=new Set(loadHist());let s=0;const d=new Date();
+  const set=new Set(histDates());let s=0;const d=new Date();
   if(!set.has(isoOf(d)))d.setDate(d.getDate()-1);
   while(set.has(isoOf(d))){s++;d.setDate(d.getDate()-1);}
   return s;
 }
-function loadLast(){try{return JSON.parse(localStorage.getItem(LKEY));}catch(e){return null;}}
-function saveLast(o){try{localStorage.setItem(LKEY,JSON.stringify(o));}catch(e){}}
+function bestStreak(){
+  const days=[...new Set(histDates())].sort();
+  let best=0,cur=0,prev=null;
+  for(const iso of days){
+    const t=new Date(iso+'T00:00:00');
+    cur=(prev&&t-prev===86400000)?cur+1:1;
+    best=Math.max(best,cur);prev=t;
+  }
+  return best;
+}
 function renderHistory(){
-  const h=loadHist(),st=calcStreak(),ls=loadLast();
-  $('hTotal').textContent=h.length;
+  const entries=loadHist(),dates=histDates(),st=calcStreak();
+  const last=entries.length?entries[entries.length-1]:null;
+  const lastD=last?(typeof last==='string'?last:last.d):null;
+  const totCycles=entries.reduce((a,e)=>a+(typeof e==='string'?0:(e.cycles||0)),0);
+  const totSecs=entries.reduce((a,e)=>a+(typeof e==='string'?0:(e.secs||0)),0);
+  $('hTotal').textContent=entries.length;
   $('hStreak').textContent=st;
-  $('hLast').textContent=h.length?fmtDate(h[h.length-1]):'—';
-  $('lastSessionInfo').textContent=ls
-    ?`Последняя сессия: ${fmtDate(ls.date)} · ${fmtDur(ls.secs)} · среднее напряжение ${ls.avg} с`
-    :'Данные о последней сессии появятся здесь после первой тренировки.';
+  $('hBest').textContent=bestStreak();
+  $('hCycles').textContent=totCycles;
+  $('hTime').textContent=fmtDur(totSecs);
+  $('hLast').textContent=lastD?fmtDate(lastD):'—';
+  $('lastSessionInfo').textContent=(last&&typeof last==='object')
+    ?`Последняя сессия: ${fmtDate(last.d)} · ${fmtDur(last.secs)} · среднее напряжение ${last.avg} с`
+    :'Данные о сессиях появятся после первой тренировки.';
   streakChip.textContent=`Серия: ${st} дн.`;
   streakChip.classList.toggle('hot',st>=3);
+}
+function renderLog(){
+  const el=$('logList');el.innerHTML='';
+  const entries=loadHist().slice(-7).reverse();
+  if(!entries.length){
+    el.innerHTML='<div class="row"><span>Сессии появятся здесь</span></div>';return;
+  }
+  entries.forEach(e=>{
+    const r=document.createElement('div');r.className='row';
+    if(typeof e==='string')r.innerHTML=`<b>${fmtDate(e)}</b><span>—</span>`;
+    else r.innerHTML=`<b>${fmtDate(e.d)}</b><span>${e.cycles} циклов</span><span>${fmtDur(e.secs)}</span><span>ср. ${e.avg} с</span>`;
+    el.appendChild(r);
+  });
 }
 
 /* ---------- График недель ---------- */
@@ -521,7 +686,7 @@ function renderWeeks(){
   const el=$('weeksChart');el.innerHTML='';
   const counts=new Array(8).fill(0);
   const ws=weekStart(new Date()).getTime();
-  loadHist().forEach(iso=>{
+  histDates().forEach(iso=>{
     const[y,m,d]=iso.split('-').map(Number);
     const w=Math.round((ws-weekStart(new Date(y,m-1,d)).getTime())/604800000);
     if(w>=0&&w<8)counts[7-w]++;
@@ -546,7 +711,7 @@ const MONTHS=['Январь','Февраль','Март','Апрель','Май'
 let calY,calM;
 {const n=new Date();calY=n.getFullYear();calM=n.getMonth();}
 function renderCalendar(){
-  const set=new Set(loadHist());
+  const set=new Set(histDates());
   $('calTitle').textContent=`${MONTHS[calM]} ${calY}`;
   const g=$('calGrid');g.innerHTML='';
   ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(w=>{
@@ -577,6 +742,7 @@ bindSeg('segRest',v=>settings.rest=+v);
 bindSeg('segWarm',v=>settings.warm=v==='1');
 bindSeg('segSound',v=>settings.sound=v);
 bindSeg('segVib',v=>settings.vib=v==='1');
+bindSeg('segAmb',v=>settings.ambient=v==='1');
 bindSeg('segRemind',v=>settings.remind=v==='1');
 $('remindTime').addEventListener('change',e=>{settings.remindTime=e.target.value;saveSettings();});
 
@@ -588,6 +754,7 @@ function syncUI(){
   mark($('segWarm'),settings.warm?'1':'0');
   mark($('segSound'),settings.sound);
   mark($('segVib'),settings.vib?'1':'0');
+  mark($('segAmb'),settings.ambient?'1':'0');
   mark($('segRemind'),settings.remind?'1':'0');
   $('remindTime').value=settings.remindTime;
   $('minRange').value=settings.min;$('maxRange').value=settings.max;
@@ -643,7 +810,8 @@ function rndDur(){const c=sessionCfg;
   return c.min+Math.floor(Math.random()*(c.max-c.min+1));}
 function isRelaxLike(k){return k==='relax'||k==='cooldown';}
 function buildSteps(){
-  steps=[];const c=sessionCfg;
+  steps=[{kind:'prep',dur:3,cycle:0}];
+  const c=sessionCfg;
   if(settings.warm)steps.push(
     {kind:'tension',dur:4,cycle:0,label:'Разминка'},
     {kind:'relax',dur:6,cycle:0,label:'Разминка'});
@@ -658,14 +826,16 @@ function setBodyPhase(k){
   body.classList.toggle('tense',k==='tension');
   body.classList.toggle('relax',isRelaxLike(k));
   body.classList.toggle('rest',k==='rest');
+  body.classList.toggle('prep',k==='prep');
 }
 function phaseSound(k){
-  if(k==='tension'){beep(660,.1,'square',.1);setTimeout(()=>beep(880,.14,'square',.1),130);vib(70);}
-  else if(isRelaxLike(k)){beep(330,.28,'sine',.14);vib(35);}
-  else{beep(440,.15,'sine',.1);vib(20);}
+  if(k==='tension')swellTension();
+  else if(isRelaxLike(k))swellRelax();
+  else if(k==='rest')restSound();
+  else prepSound();
 }
-const STATUS={tension:'Напряжение',relax:'Расслабление',rest:'Отдых',cooldown:'Заминка'};
-const HINTS={tension:'Сжимайте мышцы',
+const STATUS={prep:'Приготовьтесь',tension:'Напряжение',relax:'Расслабление',rest:'Отдых',cooldown:'Заминка'};
+const HINTS={prep:'Займите удобное положение',tension:'Сжимайте мышцы',
   relax:'Расслабьтесь · дышите в ритме кольца',
   rest:'Отдохните и приготовьтесь',
   cooldown:'Глубокое расслабление'};
@@ -673,15 +843,16 @@ function beginStep(i,carry,silent){
   si=i;curStep=steps[i];
   phase=curStep.kind;dur=curStep.dur;
   remainingMs=dur*1000-carry;
+  lastCountSec=99;
   if(phase==='tension'){tensionSum+=dur;tensionCnt++;}
   setBodyPhase(phase);
+  ambientPhase(phase);
   orbWrap.classList.remove('warn');
   if(!silent)phaseSound(phase);
   statusLabel.textContent=STATUS[phase];
   hintLabel.textContent=HINTS[phase];
 }
 function warnFlash(){
-  beep(980,.07,'square',.1);
   orbWrap.classList.add('warn');
   clearTimeout(warnT);
   warnT=setTimeout(()=>orbWrap.classList.remove('warn'),700);
@@ -696,9 +867,11 @@ function render(){
   const prog=Math.min(1,Math.max(0,elapsed/total));
   ringFg.style.strokeDashoffset=CIRC*(1-prog);
   aura.style.opacity=(.3+prog*.4).toFixed(2);
+  orbWrap.classList.toggle('counting',remainingMs<=3000);
   const n=sessionCfg.cycles;
   let sp,lbl;
-  if(phase==='cooldown'){sp=1;lbl='Заминка';}
+  if(phase==='prep'){sp=0;lbl='Приготовление';}
+  else if(phase==='cooldown'){sp=1;lbl='Заминка';}
   else if(curStep.cycle===0){sp=0;lbl=curStep.label;}
   else if(phase==='rest'){sp=curStep.cycle/n;lbl='Отдых';}
   else{
@@ -717,7 +890,11 @@ function tick(){
   if(dt<0)dt=0;
   sessionMs+=dt;remainingMs-=dt;
   const catchUp=dt>1500;
-  if(!catchUp&&remainingMs<=1000&&remainingMs+dt>1000)warnFlash();
+  if(!catchUp){
+    const sNow=Math.ceil(remainingMs/1000);
+    if(sNow!==lastCountSec&&sNow<=3&&sNow>=1){lastCountSec=sNow;tickSound();}
+    if(remainingMs<=1000&&remainingMs+dt>1000)warnFlash();
+  }
   while(remainingMs<=0&&state==='running'){
     const over=-remainingMs;
     if(si+1>=steps.length){finish();return;}
@@ -753,6 +930,7 @@ function startSession(){
   btnPause.disabled=false;btnPause.textContent='Пауза';
   buildTicks(sessionCfg.cycles);
   acquireWake();
+  ambientStart();
   buildSteps();
   lastTick=performance.now();
   beginStep(0,0,false);
@@ -765,11 +943,13 @@ function pause(){
   body.classList.add('paused');
   btnPause.textContent='Продолжить';
   beep(200,.09,'sine',.07);
+  setTimeout(()=>{try{if(AC&&AC.state==='running')AC.suspend();}catch(e){}},220);
 }
 function resume(){
   state='running';
   body.classList.remove('paused');
   btnPause.textContent='Пауза';
+  try{AC&&AC.resume();}catch(e){}
   acquireWake();
   lastTick=performance.now();
   timerId=setInterval(tick,100);
@@ -778,8 +958,9 @@ function resetSession(){
   clearInterval(timerId);timerId=null;
   clearTimeout(warnT);
   releaseWake();
+  ambientStop();
   state='idle';si=-1;curStep=null;
-  body.classList.remove('tense','relax','rest','paused','warn');
+  body.classList.remove('tense','relax','rest','prep','paused','counting','warn');
   body.classList.add('resetting');
   btnStart.textContent='Старт';btnStart.classList.remove('danger');
   btnPause.disabled=true;btnPause.textContent='Пауза';
@@ -794,34 +975,38 @@ function finish(){
   clearInterval(timerId);timerId=null;
   clearTimeout(warnT);
   releaseWake();
+  ambientStop();
+  try{AC&&AC.resume();}catch(e){}
   state='done';
   setBodyPhase('cooldown');
-  chime();vib([90,60,90,60,140]);
-  const h=saveToday();
+  body.classList.remove('prep');
+  chimeBig();vib([90,60,90,60,140]);
+  const secs=Math.round(sessionMs/1000);
+  const avg=tensionCnt?+(tensionSum/tensionCnt).toFixed(1):0;
+  const entries=saveSession({secs,avg,cycles:sessionCfg.cycles,mode:settings.mode});
   statusLabel.textContent='Готово';
   timeLabel.textContent=`${sessionCfg.cycles}/${sessionCfg.cycles}`;
   hintLabel.textContent='Отличная работа';
   barFill.style.width='100%';
+  cycleLabel.textContent='Сессия выполнена';
   btnPause.disabled=true;
   btnStart.textContent='Старт';btnStart.classList.remove('danger');
-  const secs=Math.round(sessionMs/1000);
-  const avg=tensionCnt?+(tensionSum/tensionCnt).toFixed(1):0;
-  const prev=loadLast();
-  saveLast({date:isoOf(new Date()),secs,avg,cycles:sessionCfg.cycles});
-  $('doneTotal').textContent=h.length;
+  const prevObj=(()=>{for(let i=entries.length-2;i>=0;i--){
+    if(typeof entries[i]==='object'&&typeof entries[i].avg==='number')return entries[i];}return null;})();
+  $('doneTotal').textContent=entries.length;
   $('doneStreak').textContent=calcStreak();
-  $('doneLast').textContent=h.length?fmtDate(h[h.length-1]):'—';
+  const lastD=entries[entries.length-1];
+  $('doneLast').textContent=fmtDate(typeof lastD==='string'?lastD:lastD.d);
   $('doneDur').textContent=fmtDur(secs);
   $('doneAvg').textContent=avg+' с';
-  if(prev){
-    const diff=+(avg-prev.avg).toFixed(1);
+  if(prevObj){
+    const diff=+(avg-prevObj.avg).toFixed(1);
     $('doneCmp').textContent=Math.abs(diff)<0.05
-      ?`Среднее напряжение как в прошлый раз (${prev.avg} с)`
+      ?`Среднее напряжение как в прошлый раз (${prevObj.avg} с)`
       :`Среднее напряжение на ${Math.abs(diff)} с ${diff>0?'дольнее':'короче'}, чем в прошлый раз`;
   }else $('doneCmp').textContent='Первая сессия в статистике.';
   $('doneOverlay').classList.add('show');
   document.title='Готово · Кегель-таймер';
-  renderHistory();
 }
 
 btnStart.addEventListener('click',()=>{
@@ -838,6 +1023,7 @@ $('btnDone').addEventListener('click',()=>{
 /* Двойной тап — пауза */
 let lastTap=0;
 orbWrap.addEventListener('pointerup',()=>{
+  if(anyModal())return;
   const now=Date.now();
   if(now-lastTap<330){
     if(state==='running')pause();
@@ -853,24 +1039,38 @@ function toggleFS(){
     document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{});
   else document.exitFullscreen&&document.exitFullscreen();
 }
+function markSeen(){try{localStorage.setItem(SEEN,'1');}catch(e){}}
 document.addEventListener('keydown',e=>{
   if(e.target&&(e.target.tagName==='INPUT'))return;
+  if(e.key==='Escape'){
+    const m=document.querySelector('.modal.show');
+    if(m){
+      if(m.id==='doneOverlay'){$('btnDone').click();}
+      else{m.classList.remove('show');if(m.id==='introModal')markSeen();}
+    }
+    return;
+  }
   const k=e.key.toLowerCase();
   if(e.code==='Space'&&!anyModal()&&(state==='running'||state==='paused')){
     e.preventDefault();state==='running'?pause():resume();
   }else if((k==='r'||k==='к')&&!anyModal()&&(state==='running'||state==='paused')){
     resetSession();
-  }else if(k==='f'||k==='а'){
-    if(!anyModal())toggleFS();
+  }else if((k==='f'||k==='а')&&!anyModal()){
+    toggleFS();
   }
 });
 
 /* ---------- Модальные окна ---------- */
 function openModal(el){el.classList.add('show');}
 document.querySelectorAll('[data-close]').forEach(b=>
-  b.addEventListener('click',()=>b.closest('.modal').classList.remove('show')));
+  b.addEventListener('click',()=>{
+    const m=b.closest('.modal');
+    m.classList.remove('show');
+    if(m.id==='introModal')markSeen();
+  }));
 $('setBtn').onclick=()=>{syncUI();openModal($('settingsModal'));};
-$('histBtn').onclick=()=>{renderHistory();renderWeeks();renderCalendar();openModal($('historyModal'));};
+$('histBtn').onclick=()=>{renderHistory();renderLog();renderWeeks();renderCalendar();openModal($('historyModal'));};
+$('helpBtn').onclick=()=>openModal($('introModal'));
 $('fsBtn').onclick=toggleFS;
 
 /* ---------- Частицы ---------- */
@@ -888,9 +1088,12 @@ $('fsBtn').onclick=toggleFS;
   }
 }
 
+/* ---------- Старт приложения ---------- */
 renderHistory();
 syncUI();
 updateIdle();
+requestAnimationFrame(()=>setTimeout(()=>body.classList.remove('boot'),120));
+if(!localStorage.getItem(SEEN))setTimeout(()=>openModal($('introModal')),700);
 })();
 </script>
 </body>
