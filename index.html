@@ -2,43 +2,52 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Кегель-таймер</title>
 <meta name="description" content="Тренажёр Кегеля: циклы напряжения и расслабления, программа уровней, серия тренировок и статистика.">
 <meta name="theme-color" content="#121212">
+<link rel="manifest" href="data:application/manifest+json,{&quot;name&quot;:&quot;Кегель-таймер&quot;,&quot;short_name&quot;:&quot;Кегель&quot;,&quot;description&quot;:&quot;Тренажёр мышц тазового дна&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;scope&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;orientation&quot;:&quot;portrait&quot;,&quot;background_color&quot;:&quot;%23121212&quot;,&quot;theme_color&quot;:&quot;%23121212&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%23121212'/%3E%3Ccircle cx='256' cy='256' r='180' fill='none' stroke='%2343dd82' stroke-width='40' stroke-dasharray='600 200' stroke-linecap='round' transform='rotate(-90 256 256)'/%3E%3C/svg%3E&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;,&quot;purpose&quot;:&quot;any&quot;},{&quot;src&quot;:&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23121212'/%3E%3Ccircle cx='256' cy='256' r='180' fill='none' stroke='%2343dd82' stroke-width='40' stroke-dasharray='600 200' stroke-linecap='round' transform='rotate(-90 256 256)'/%3E%3C/svg%3E&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;,&quot;purpose&quot;:&quot;maskable&quot;}]}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23121212'/%3E%3Ccircle cx='32' cy='32' r='21' fill='none' stroke='%2343dd82' stroke-width='7' stroke-dasharray='99 33' stroke-linecap='round' transform='rotate(-90 32 32)'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23121212'/%3E%3Ccircle cx='90' cy='90' r='60' fill='none' stroke='%2343dd82' stroke-width='14' stroke-dasharray='200 80' stroke-linecap='round' transform='rotate(-90 90 90)'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#121212; --text:#f1efe9; --muted:#8b8b94;
-  --red:#ff5a4e; --green:#43dd82; --warn:#ffd75e;
+  --bg:#121212;--text:#f1efe9;--muted:#8b8b94;
+  --red:#ff5a4e;--green:#43dd82;--warn:#ffd75e;
   --fd:'Unbounded',system-ui,sans-serif;
   --fb:'Manrope',system-ui,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100dvh;
   display:flex;flex-direction:column;-webkit-tap-highlight-color:transparent;
   user-select:none;overflow-x:hidden}
 :focus-visible{outline:2px solid var(--text);outline-offset:3px;border-radius:6px}
+button{font-family:inherit}
 
-/* ---------- Появление при загрузке ---------- */
 header,main{transition:opacity .8s ease,transform .8s ease}
 body.boot header{opacity:0;transform:translateY(-14px)}
 body.boot main{opacity:0;transform:translateY(16px)}
 
-/* ---------- Фоновые слои ---------- */
 .bg-layer{position:fixed;inset:0;z-index:0;opacity:0;pointer-events:none}
 #bgRed{background:radial-gradient(120% 90% at 50% 18%,#571616 0%,#3a0d0d 55%,#240707 100%)}
 #bgGreen{background:radial-gradient(120% 90% at 50% 18%,#14522a 0%,#0d3a1a 55%,#062411 100%)}
+#bgPower{background:radial-gradient(120% 90% at 50% 18%,#241245 0%,#12082e 55%,#08041a 100%)}
+#bgBlue{background:radial-gradient(120% 90% at 50% 18%,#0f2440 0%,#081830 55%,#040d1e 100%)}
 body.tense #bgRed{animation:layerIn .8s ease forwards}
-body.tense #bgGreen{animation:layerOut .8s ease forwards}
+body.tense #bgGreen,body.tense #bgPower,body.tense #bgBlue{animation:layerOut .8s ease forwards}
 body.relax #bgGreen{animation:layerIn .8s ease forwards}
-body.relax #bgRed{animation:layerOut .8s ease forwards}
-body.rest #bgRed,body.rest #bgGreen,
-body.prep #bgRed,body.prep #bgGreen,
-body.resetting #bgRed,body.resetting #bgGreen{animation:layerOut .8s ease forwards}
+body.relax #bgRed,body.relax #bgPower,body.relax #bgBlue{animation:layerOut .8s ease forwards}
+body.rest #bgGreen{animation:layerOut .8s ease forwards}
+body.rest #bgRed,body.rest #bgPower,body.rest #bgBlue{animation:layerOut .8s ease forwards}
+body.prep #bgRed,body.prep #bgGreen,body.prep #bgPower,body.prep #bgBlue{animation:layerOut .8s ease forwards}
+body.resetting #bgRed,body.resetting #bgGreen,body.resetting #bgPower,body.resetting #bgBlue{animation:layerOut .8s ease forwards}
+body.power #bgPower{animation:layerIn .8s ease forwards}
+body.power #bgRed,body.power #bgGreen,body.power #bgBlue{animation:layerOut .8s ease forwards}
+body.final #bgBlue{animation:layerIn .8s ease forwards}
+body.final #bgRed,body.final #bgGreen,body.final #bgPower{animation:layerOut .8s ease forwards}
 @keyframes layerIn{from{opacity:0}to{opacity:1}}
 @keyframes layerOut{from{opacity:1}to{opacity:0}}
 
@@ -50,62 +59,73 @@ body.resetting #bgRed,body.resetting #bgGreen{animation:layerOut .8s ease forwar
   transition:background-color .8s ease;animation:rise linear infinite}
 body.tense .particles i{background:#ff8a7e}
 body.relax .particles i{background:#7de8a8}
+body.power .particles i{background:#b794f4}
+body.final .particles i{background:#90cdf4}
 @keyframes rise{to{transform:translateY(-112vh)}}
 
-/* ---------- Шапка ---------- */
 header{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;
   gap:14px;padding:20px clamp(16px,4vw,36px);flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-size:.9rem;
-  letter-spacing:.1em;text-transform:uppercase}
-.dot{width:9px;height:9px;border-radius:50%;background:#5a5a62;animation:pulse 2.2s ease-in-out infinite}
+  letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:#5a5a62;animation:pulse 2.2s ease-in-out infinite;flex:none}
 @keyframes pulse{50%{transform:scale(1.5);opacity:.5}}
 body.tense .dot{background:var(--red);box-shadow:0 0 14px rgba(255,90,78,.8)}
 body.relax .dot{background:var(--green);box-shadow:0 0 14px rgba(67,221,130,.8)}
-.head-actions{display:flex;align-items:center;gap:10px}
+body.power .dot{background:#b794f4;box-shadow:0 0 14px rgba(183,148,244,.8)}
+body.final .dot{background:#90cdf4;box-shadow:0 0 14px rgba(144,205,244,.8)}
+.head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .streak-chip{font-size:.76rem;font-weight:800;letter-spacing:.06em;color:var(--muted);
   border:1px solid rgba(255,255,255,.12);border-radius:99px;padding:10px 14px;
   background:rgba(255,255,255,.04);white-space:nowrap;transition:.3s}
 .streak-chip.hot{color:var(--warn);border-color:rgba(255,215,94,.4)}
 .icon-btn{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.14);color:var(--text);cursor:pointer;
-  display:grid;place-items:center;font-size:1.15rem;transition:transform .18s,background-color .18s}
+  display:grid;place-items:center;font-size:1.15rem;flex:none;
+  transition:transform .18s,background-color .18s}
 .icon-btn:hover{background:rgba(255,255,255,.11);transform:translateY(-1px)}
 .icon-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round}
 .icon-btn .q{font:800 1.05rem var(--fb)}
 
-/* ---------- Сцена ---------- */
 main{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:26px;padding:8px 20px 32px}
-.stage{position:relative;display:grid;place-items:center}
-.aura{position:absolute;width:clamp(300px,84vmin,450px);aspect-ratio:1;border-radius:50%;
-  filter:blur(34px);opacity:.3;background:#3a3a40;pointer-events:none;
-  transition:background-color .8s ease}
+  justify-content:center;gap:24px;padding:8px 20px 32px;width:100%}
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:16px}
+.orb-wrap{position:relative;display:grid;place-items:center;cursor:pointer;will-change:transform}
+body.tense .orb-wrap{animation:shrink .5s ease forwards}
+body.relax .orb-wrap,body.resetting .orb-wrap{animation:grow .5s ease forwards}
+body.power .orb-wrap{animation:powerPulse .8s ease-in-out infinite}
+@keyframes shrink{to{transform:scale(.85)}}
+@keyframes grow{to{transform:scale(1)}}
+@keyframes powerPulse{0%,100%{transform:scale(1)}50%{transform:scale(.92)}}
+
+.aura{position:absolute;top:50%;left:50%;width:clamp(290px,80vmin,440px);aspect-ratio:1;
+  border-radius:50%;filter:blur(36px);opacity:.3;background:#3a3a40;pointer-events:none;
+  transform:translate(-50%,-50%);transition:background-color .8s ease;z-index:0}
 body.tense .aura{background:#c22f22;animation:auraTense 1.1s ease-in-out infinite}
 body.relax .aura{background:#1f9d5c;animation:auraRelax 4s ease-in-out infinite}
 body.rest .aura{background:#4a4a52;animation:auraRelax 3.5s ease-in-out infinite}
 body.prep .aura{background:#cfcabc;animation:auraRelax 2s ease-in-out infinite}
-@keyframes auraTense{50%{transform:scale(.92)}}
-@keyframes auraRelax{50%{transform:scale(1.08)}}
-
-.orb-wrap{position:relative;will-change:transform;cursor:pointer}
-body.tense .orb-wrap{animation:shrink .5s ease forwards}
-body.relax .orb-wrap,body.resetting .orb-wrap{animation:grow .5s ease forwards}
-@keyframes shrink{to{transform:scale(.85)}}
-@keyframes grow{to{transform:scale(1)}}
+body.power .aura{background:#6b46c1;animation:auraPower 1.5s ease-in-out infinite}
+body.final .aura{background:#4299e1;animation:auraRelax 3s ease-in-out infinite}
+@keyframes auraTense{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(.92)}}
+@keyframes auraRelax{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes auraPower{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(.95)}}
 
 .breath{position:absolute;inset:-16px;border-radius:50%;border:2px solid rgba(67,221,130,.55);
-  opacity:0;pointer-events:none}
+  opacity:0;pointer-events:none;z-index:1}
 body.relax .breath{animation:breath 4s ease-in-out infinite}
+body.final .breath{border-color:rgba(144,205,244,.55);animation:breath 3s ease-in-out infinite}
 @keyframes breath{0%,100%{transform:scale(.96);opacity:.12}50%{transform:scale(1.07);opacity:.6}}
 
-.orb{position:relative;width:clamp(240px,64vmin,330px);aspect-ratio:1;border-radius:50%;
+.orb{position:relative;width:clamp(250px,66vmin,340px);aspect-ratio:1;border-radius:50%;
   background:radial-gradient(circle at 50% 36%,#27272b 0%,#1a1a1d 70%,#151517 100%);
   border:1px solid rgba(255,255,255,.07);
-  box-shadow:0 30px 70px -25px rgba(0,0,0,.85);display:grid;place-items:center}
+  box-shadow:0 30px 70px -25px rgba(0,0,0,.85);display:grid;place-items:center;z-index:2}
 body.tense .orb{animation:shake .3s linear infinite,glowRed .8s ease forwards}
 body.relax .orb{animation:glowGreen .8s ease forwards}
 body.prep .orb{animation:prepPulse 1s ease-in-out infinite}
+body.power .orb{animation:shake .3s linear infinite,glowPower .8s ease forwards}
+body.final .orb{animation:glowFinal .8s ease forwards}
 @keyframes prepPulse{50%{transform:scale(1.02)}}
 @keyframes shake{
   0%,100%{transform:translate(0,0)}
@@ -117,6 +137,10 @@ body.prep .orb{animation:prepPulse 1s ease-in-out infinite}
   box-shadow:0 26px 90px -18px rgba(224,45,25,.55),inset 0 0 70px rgba(255,80,60,.07)}}
 @keyframes glowGreen{to{border-color:rgba(67,221,130,.35);
   box-shadow:0 26px 90px -18px rgba(30,190,100,.4),inset 0 0 70px rgba(60,220,130,.06)}}
+@keyframes glowPower{to{border-color:rgba(183,148,244,.5);
+  box-shadow:0 26px 90px -18px rgba(139,92,246,.6),inset 0 0 70px rgba(183,148,244,.1)}}
+@keyframes glowFinal{to{border-color:rgba(144,205,244,.45);
+  box-shadow:0 26px 90px -18px rgba(66,153,225,.5),inset 0 0 70px rgba(144,205,244,.08)}}
 
 .ring{position:absolute;inset:7px;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:3.5;stroke-linecap:round}
@@ -126,35 +150,49 @@ body.tense .ring-fg{stroke:var(--red)}
 body.relax .ring-fg{stroke:var(--green)}
 body.rest .ring-fg{stroke:#9a958b}
 body.prep .ring-fg{stroke:#e8e6e1}
+body.power .ring-fg{stroke:#b794f4}
+body.final .ring-fg{stroke:#90cdf4}
 .orb-wrap.warn .ring-fg{stroke:var(--warn)!important;
   filter:drop-shadow(0 0 6px rgba(255,215,94,.85))}
 
-.orb-text{position:relative;z-index:1;text-align:center;padding:0 12%}
-.status{font-size:.8rem;font-weight:800;letter-spacing:.32em;text-transform:uppercase;
-  color:var(--muted);transition:color .6s ease;margin-bottom:6px;padding-left:.32em}
+.orb-text{position:relative;z-index:3;text-align:center;padding:0 8%;width:100%}
+.status{font-size:clamp(.62rem,2vmin,.8rem);font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--muted);transition:color .6s ease;margin-bottom:6px;white-space:nowrap}
 body.tense .status{color:var(--red)}
 body.relax .status{color:var(--green)}
 body.rest .status{color:#cfcabc}
 body.prep .status{color:var(--text)}
-.time{font-family:var(--fd);font-weight:800;font-size:clamp(3rem,15vmin,4.5rem);
-  line-height:1.05;font-variant-numeric:tabular-nums;transition:color .25s ease}
+body.power .status{color:#b794f4}
+body.final .status{color:#90cdf4}
+.time{font-family:var(--fd);font-weight:800;font-size:clamp(2.4rem,12vmin,4rem);
+  line-height:1.1;font-variant-numeric:tabular-nums;transition:color .25s ease;
+  white-space:nowrap}
+.time.text-mode{font-size:clamp(1.5rem,7vmin,2.4rem);letter-spacing:.12em}
 .counting .time{color:var(--warn);animation:timePulse 1s ease-in-out infinite}
 @keyframes timePulse{50%{transform:scale(1.05)}}
-.hint{margin-top:8px;font-size:.85rem;color:var(--muted)}
+.hint{margin:8px auto 0;font-size:clamp(.72rem,2.2vmin,.85rem);color:var(--muted);
+  max-width:95%;line-height:1.4}
+.hint.final{color:#90cdf4;font-weight:800}
 
-/* ---------- Прогресс ---------- */
-.progress-zone{width:min(420px,88vw);display:flex;flex-direction:column;gap:10px}
-.cycle{text-align:center;font-size:.85rem;font-weight:600;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--muted)}
+.power-indicators{display:flex;gap:8px;justify-content:center;min-height:10px}
+.power-indicators span{width:9px;height:9px;border-radius:50%;background:rgba(183,148,244,.25);
+  transition:background-color .3s,transform .3s}
+.power-indicators span.done{background:#b794f4}
+.power-indicators span.active{background:#b794f4;transform:scale(1.35);animation:indPulse .6s ease-in-out infinite}
+@keyframes indPulse{50%{opacity:.6}}
+
+.progress-zone{width:min(420px,90vw);display:flex;flex-direction:column;gap:10px}
+.cycle{text-align:center;font-size:.82rem;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);white-space:nowrap}
 .bar{position:relative;height:9px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
 .bar-fill{height:100%;width:0;border-radius:99px;
   background:linear-gradient(90deg,var(--red),#f7b267 50%,var(--green))}
-.bar-ticks{position:absolute;inset:0}
+body.power .bar-fill{background:linear-gradient(90deg,#b794f4,#90cdf4)}
+.bar-ticks{position:absolute;inset:0;pointer-events:none}
 
-/* ---------- Кнопки ---------- */
-.controls{display:flex;gap:14px}
+.controls{display:flex;gap:14px;width:min(420px,90vw)}
 .btn{font-family:var(--fb);font-weight:800;font-size:1.05rem;border:0;cursor:pointer;
-  border-radius:16px;padding:18px 38px;min-width:170px;color:var(--text);letter-spacing:.02em;
+  border-radius:16px;padding:18px 20px;flex:1;min-width:0;color:var(--text);letter-spacing:.02em;
   transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease,
   border-color .18s ease,color .18s ease}
 .btn:hover:not(:disabled){transform:translateY(-2px)}
@@ -166,102 +204,134 @@ body.prep .status{color:var(--text)}
   border:1px solid rgba(255,90,78,.45);box-shadow:none}
 .btn.ghost{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16)}
 .btn.ghost:hover:not(:disabled){background:rgba(255,255,255,.1)}
-.btn.wide{width:100%;margin-top:22px;min-width:0}
-.btn.small{padding:10px 14px;min-width:0;font-size:.82rem;border-radius:10px}
-.note{font-size:.78rem;color:var(--muted);letter-spacing:.04em;text-align:center}
+.btn.wide{width:100%;margin-top:22px;flex:none}
+.btn.small{padding:10px 14px;min-width:0;font-size:.82rem;border-radius:10px;flex:none}
+.note{font-size:.76rem;color:var(--muted);letter-spacing:.03em;text-align:center;line-height:1.5;
+  max-width:90vw}
 .note.dim{opacity:.7}
 
 .pause-tag{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:40;
   padding:8px 20px;border-radius:99px;background:rgba(18,18,18,.9);
   border:1px solid rgba(255,255,255,.22);font-size:.75rem;font-weight:800;
-  letter-spacing:.3em;text-transform:uppercase;opacity:0;transition:opacity .3s ease;pointer-events:none}
+  letter-spacing:.3em;text-transform:uppercase;opacity:0;transition:opacity .3s ease;
+  pointer-events:none;white-space:nowrap}
 body.paused .pause-tag{opacity:1}
 body.paused *,body.paused *::before,body.paused *::after{animation-play-state:paused!important}
 
-/* ---------- Модальные окна ---------- */
-.modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:18px;
+.mute-btn{position:fixed;right:16px;bottom:16px;z-index:35;width:54px;height:54px;
+  border-radius:50%;background:rgba(18,18,18,.95);border:1px solid rgba(255,255,255,.18);
+  color:var(--text);cursor:pointer;display:grid;place-items:center;
+  box-shadow:0 8px 24px -6px rgba(0,0,0,.6);transition:transform .2s,background-color .2s,border-color .2s}
+.mute-btn:hover{background:rgba(30,30,30,.95);transform:scale(1.08)}
+.mute-btn svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.mute-btn.muted{background:rgba(255,90,78,.12);border-color:rgba(255,90,78,.4);color:#ff8a7e}
+
+.modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;
   background:rgba(10,12,10,.72);backdrop-filter:blur(7px);
   opacity:0;visibility:hidden;transition:opacity .4s ease,visibility .4s ease}
 .modal.show{opacity:1;visibility:visible}
-.card{width:min(440px,100%);background:#1b1c19;border:1px solid rgba(255,255,255,.09);
-  border-radius:24px;padding:26px;box-shadow:0 40px 90px -30px rgba(0,0,0,.9);
-  max-height:92dvh;overflow:auto;transform:translateY(18px) scale(.96);
+.card{width:min(460px,100%);background:#1b1c19;border:1px solid rgba(255,255,255,.09);
+  border-radius:22px;padding:24px;box-shadow:0 40px 90px -30px rgba(0,0,0,.9);
+  max-height:min(92dvh,760px);overflow-y:auto;overscroll-behavior:contain;
+  transform:translateY(18px) scale(.96);
   transition:transform .5s cubic-bezier(.2,.9,.3,1.15)}
 .modal.show .card{transform:none}
-.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.card-head h3{font-family:var(--fd);font-size:1.15rem;font-weight:800}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.card-head h3{font-family:var(--fd);font-size:1.1rem;font-weight:800}
 
 .opt{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-.opt>label{display:flex;justify-content:space-between;font-size:.85rem;color:var(--muted)}
-.opt b{color:var(--text)}
+.opt>label{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  font-size:.85rem;color:var(--muted)}
+.opt b{color:var(--text);white-space:nowrap}
 .seg{display:flex;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);
-  border-radius:12px;padding:3px;gap:3px}
-.seg button{flex:1;border:0;background:transparent;color:var(--muted);
-  font:600 .84rem var(--fb);padding:9px 4px;border-radius:9px;cursor:pointer;
+  border-radius:12px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;min-width:0;border:0;background:transparent;color:var(--muted);
+  font:600 .8rem/1.2 var(--fb);padding:9px 7px;border-radius:9px;cursor:pointer;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   transition:background-color .18s,color .18s}
+.seg.cols5 button{flex:1 1 30%}
 .seg button.on{background:#f2f0ec;color:#141414;font-weight:800}
 .seg button:hover:not(.on):not(:disabled){color:var(--text)}
-input[type=range]{width:100%;accent-color:#f2f0ec;cursor:pointer}
+.seg button:disabled{opacity:.4;cursor:default}
+input[type=range]{width:100%;accent-color:#f2f0ec;cursor:pointer;height:22px}
 fieldset{border:0;transition:opacity .3s}
-fieldset:disabled{opacity:.35}
+fieldset:disabled{opacity:.35;pointer-events:none}
 .sep{height:1px;background:rgba(255,255,255,.08);margin:18px 0 2px}
-.prog-info{margin-top:12px;font-size:.82rem;line-height:1.5;color:#8ff0b6;
-  background:rgba(67,221,130,.08);border:1px solid rgba(67,221,130,.2);
-  border-radius:12px;padding:10px 14px}
+.info-box{margin-top:12px;font-size:.82rem;line-height:1.5;border-radius:12px;padding:10px 14px}
+.prog-info{color:#8ff0b6;background:rgba(67,221,130,.08);border:1px solid rgba(67,221,130,.2)}
+.power-info{color:#b794f4;background:rgba(183,148,244,.08);border:1px solid rgba(183,148,244,.2)}
+.control-info{color:#90cdf4;background:rgba(144,205,244,.08);border:1px solid rgba(144,205,244,.2)}
+.template-desc{font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.5}
 .fineprint{font-size:.72rem;color:var(--muted);margin-top:8px;line-height:1.5}
 .remind-row{flex-direction:row;align-items:center;gap:10px}
 input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
-  color:var(--text);border-radius:10px;padding:9px 12px;font:600 .9rem var(--fb)}
+  color:var(--text);border-radius:10px;padding:9px 12px;font:600 .9rem var(--fb);flex:1;min-width:0}
 
-.stats3{display:flex;gap:10px;margin:6px 0 4px}
-.stats3>div{flex:1;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;gap:4px;
-  align-items:center;text-align:center}
-.stats3 b{font-family:var(--fd);font-size:.95rem}
-.stats3 span{font-size:.62rem;color:var(--muted);letter-spacing:.07em;text-transform:uppercase}
+.stats3{display:flex;gap:8px;margin:6px 0 4px;flex-wrap:wrap}
+.stats3>div{flex:1 1 90px;min-width:85px;background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 6px;
+  display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center}
+.stats3 b{font-family:var(--fd);font-size:.9rem;word-break:break-word}
+.stats3 span{font-size:.6rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;
+  line-height:1.3}
 .last-session{font-size:.8rem;color:var(--muted);margin-top:14px;line-height:1.5}
 
-.log{display:flex;flex-direction:column;gap:6px}
-.log .row{display:flex;justify-content:space-between;gap:8px;font-size:.76rem;
-  background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);
-  border-radius:10px;padding:8px 12px;color:var(--muted)}
+.log{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;
+  overscroll-behavior:contain;padding-right:2px}
+.log .row{display:flex;justify-content:flex-start;align-items:center;gap:8px;flex-wrap:wrap;
+  font-size:.74rem;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;padding:9px 12px;color:var(--muted)}
 .log .row b{color:var(--text);font-weight:700;white-space:nowrap}
+.log .row span{white-space:nowrap}
+.mode-badge{font-size:.62rem;padding:3px 8px;border-radius:99px;font-weight:800;
+  letter-spacing:.05em;white-space:nowrap}
+.mode-badge.free{background:rgba(67,221,130,.15);color:#8ff0b6}
+.mode-badge.program{background:rgba(255,215,94,.15);color:#ffd75e}
+.mode-badge.power{background:rgba(183,148,244,.15);color:#b794f4}
+.mode-badge.control{background:rgba(144,205,244,.15);color:#90cdf4}
+.mode-badge.morning{background:rgba(255,182,193,.15);color:#ffb6c1}
 
-.weeks{display:flex;align-items:flex-end;gap:6px;height:90px}
-.wk{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
-  gap:4px;height:100%}
-.wk .c{font-size:.6rem;color:#8ff0b6;font-weight:800;min-height:.75em}
-.wk .b{width:100%;border-radius:6px 6px 3px 3px;min-height:3px;
+.filters{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.filters button{font:600 .76rem var(--fb);padding:6px 13px;border-radius:99px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+  color:var(--muted);cursor:pointer;transition:background-color .18s,color .18s;white-space:nowrap}
+.filters button.on{background:#f2f0ec;color:#141414;font-weight:800}
+.filters button:hover:not(.on){background:rgba(255,255,255,.1)}
+
+.weeks{display:flex;align-items:flex-end;gap:5px;height:88px}
+.wk{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;
+  align-items:center;gap:3px;height:100%}
+.wk .c{font-size:.58rem;color:#8ff0b6;font-weight:800;min-height:.7em}
+.wk .b{width:100%;max-width:26px;border-radius:5px 5px 2px 2px;min-height:3px;
   background:linear-gradient(180deg,var(--green),rgba(67,221,130,.3))}
-.wk .l{font-size:.58rem;color:var(--muted)}
+.wk .l{font-size:.55rem;color:var(--muted);white-space:nowrap}
 .wk.cur .l{color:var(--text);font-weight:800}
 
-.cal-head{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px}
-.cal-head b{font-size:.95rem}
+.cal-head{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px;gap:8px}
+.cal-head b{font-size:.92rem;white-space:nowrap}
 .cal-nav{width:32px;height:32px}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal .wd{font-size:.62rem;color:var(--muted);text-align:center;letter-spacing:.08em;padding:3px 0}
-.cal .d{aspect-ratio:1;display:grid;place-items:center;font-size:.76rem;border-radius:8px;
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal .wd{font-size:.6rem;color:var(--muted);text-align:center;letter-spacing:.06em;padding:3px 0}
+.cal .d{aspect-ratio:1;display:grid;place-items:center;font-size:.72rem;border-radius:7px;
   color:var(--muted);position:relative}
 .cal .d.done{background:rgba(67,221,130,.15);color:#8ff0b6;font-weight:800}
-.cal .d.done::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;
+.cal .d.done::after{content:'';position:absolute;bottom:2px;width:4px;height:4px;
   border-radius:50%;background:var(--green)}
 .cal .d.today{outline:1px solid rgba(255,255,255,.4)}
 
-/* ---------- Онбординг ---------- */
-.intro p{font-size:.88rem;color:var(--muted);line-height:1.6;margin-top:8px}
-.intro .lead{color:var(--text);font-size:.95rem}
-.intro h4{margin:18px 0 4px;font-size:.74rem;letter-spacing:.25em;text-transform:uppercase;
+.intro p{font-size:.87rem;color:var(--muted);line-height:1.6;margin-top:8px}
+.intro .lead{color:var(--text);font-size:.94rem}
+.intro h4{margin:18px 0 4px;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;
   color:#8ff0b6;font-weight:800}
-.intro ul{margin:6px 0 4px 18px;font-size:.85rem;color:var(--muted);line-height:1.65}
+.intro ul{margin:6px 0 4px 18px;font-size:.84rem;color:var(--muted);line-height:1.65}
 
-/* ---------- Экран успеха ---------- */
 .done-card{text-align:center;position:relative;overflow:visible}
 .done-badge{width:62px;height:62px;margin:4px auto 16px;border-radius:50%;display:grid;
   place-items:center;font-size:1.7rem;color:#0d3a1a;background:var(--green);
   box-shadow:0 12px 30px -8px rgba(67,221,130,.5);position:relative;z-index:1}
-.done-card h2{font-family:var(--fd);font-weight:800;font-size:1.3rem;margin-bottom:10px}
-.done-card p{color:var(--muted);font-size:.9rem;line-height:1.55}
+.done-card h2{font-family:var(--fd);font-weight:800;font-size:1.25rem;margin-bottom:10px}
+.done-card p{color:var(--muted);font-size:.88rem;line-height:1.55}
 .done-extra{margin-top:10px}
 .cmp{font-size:.78rem;color:#8ff0b6;margin-top:12px}
 .celebrate{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:0}
@@ -273,14 +343,21 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 @keyframes celeb{0%{opacity:.85;transform:scale(.4)}100%{opacity:0;transform:scale(3.2)}}
 
 @media (max-width:560px){
-  .controls{width:100%;max-width:420px}
-  .btn{flex:1;min-width:0;padding:18px 10px}
   .streak-chip{padding:9px 11px}
+  .seg button{font-size:.76rem;padding:8px 5px}
+  .card{padding:20px 16px}
+}
+@media (max-height:700px){
+  main{gap:16px}
+  .orb{width:clamp(220px,52vmin,300px)}
+  .aura{width:clamp(260px,68vmin,380px)}
 }
 @media (prefers-reduced-motion:reduce){
   body.tense .orb{animation:glowRed .8s ease forwards}
+  body.power .orb-wrap{animation:none}
   .particles{display:none}
   .celebrate{display:none}
+  .counting .time{animation:none}
 }
 </style>
 </head>
@@ -288,6 +365,8 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 
 <div class="bg-layer" id="bgGreen"></div>
 <div class="bg-layer" id="bgRed"></div>
+<div class="bg-layer" id="bgPower"></div>
+<div class="bg-layer" id="bgBlue"></div>
 <div class="particles" id="particles"></div>
 <div class="vignette"></div>
 <div class="pause-tag">Пауза</div>
@@ -311,8 +390,8 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 
 <main>
   <div class="stage">
-    <div class="aura" id="aura"></div>
     <div class="orb-wrap" id="orbWrap">
+      <div class="aura" id="aura"></div>
       <div class="breath"></div>
       <div class="orb" id="orb">
         <svg class="ring" viewBox="0 0 100 100" aria-hidden="true">
@@ -326,6 +405,7 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
         </div>
       </div>
     </div>
+    <div class="power-indicators" id="powerIndicators"></div>
   </div>
 
   <div class="progress-zone">
@@ -338,10 +418,17 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
     <button class="btn ghost" id="btnPause" disabled>Пауза</button>
   </div>
   <p class="note" id="noteLabel"></p>
-  <p class="note dim">Пробел — пауза · R — сброс · F — экран · двойной тап по кругу — пауза</p>
+  <p class="note dim">Пробел — пауза · R — сброс · F — экран · M — звук · двойной тап по кругу — пауза</p>
 </main>
 
-<!-- Онбординг -->
+<button class="mute-btn" id="muteBtn" title="Звук (M)" aria-label="Переключить звук">
+  <svg viewBox="0 0 24 24" id="muteIcon">
+    <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" class="snd-wave"/>
+    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" class="snd-wave"/>
+  </svg>
+</button>
+
 <div class="modal" id="introModal">
   <div class="card intro">
     <div class="card-head"><h3>Добро пожаловать</h3></div>
@@ -352,40 +439,56 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
       <li>Сжимайте плавно, без рывков, и полностью расслабляйтесь — фаза расслабления не менее важна.</li>
       <li>Дышите свободно, не задерживайте дыхание; живот, ягодицы и бёдра остаются расслабленными.</li>
     </ul>
-    <h4>Как проходит сессия</h4>
+    <h4>Режимы тренировок</h4>
     <ul>
-      <li>Красный фон и дрожащий круг — напрягайтесь. Зелёный — расслабляйтесь. Серый — отдых.</li>
-      <li>Перед каждой сменой фазы идёт отсчёт 3-2-1.</li>
-      <li>Пауза: кнопка «Пауза», пробел или двойной тап по кругу.</li>
+      <li><b>Свободный</b> — шаблоны и ручные настройки длительности.</li>
+      <li><b>Программа</b> — сложность растёт каждые 3 тренировки.</li>
+      <li><b>Power</b> — 8 быстрых импульсов, раз в день.</li>
+      <li><b>Контроль</b> — случайные длительности 1–30 с.</li>
+      <li><b>Утренний</b> — мягкая сессия на 3–5 минут.</li>
+    </ul>
+    <h4>Управление</h4>
+    <ul>
+      <li>Красный фон — напрягайтесь. Зелёный — расслабляйтесь. Серый — отдых.</li>
+      <li>Перед сменой фазы идёт отсчёт 3-2-1.</li>
+      <li>Пауза: кнопка, пробел или двойной тап по кругу.</li>
+      <li>Кнопка звука справа внизу работает прямо во время тренировки.</li>
     </ul>
     <h4>Регулярность</h4>
-    <p>Эффект заметен через 3–6 недель ежедневных занятий. Серия дней и режим «Программа» с ростом сложности помогают держать ритм.</p>
+    <p>Эффект заметен через 3–6 недель ежедневных занятий. Серия дней и «Программа» помогают держать ритм.</p>
     <p class="fineprint">Приложение не является медицинским изделием. При болях, острых воспалениях или после операций проконсультируйтесь с врачом.</p>
     <button class="btn primary wide" data-close>Начать тренировки</button>
   </div>
 </div>
 
-<!-- Настройки -->
 <div class="modal" id="settingsModal">
   <div class="card">
     <div class="card-head"><h3>Настройки</h3>
       <button class="icon-btn" data-close aria-label="Закрыть">✕</button></div>
 
     <div class="opt"><label>Режим</label>
-      <div class="seg" id="segMode">
+      <div class="seg cols5" id="segMode">
         <button data-v="free">Свободный</button>
         <button data-v="program">Программа</button>
+        <button data-v="power" id="btnPower">Power</button>
+        <button data-v="control">Контроль</button>
+        <button data-v="morning">Утренний</button>
       </div>
     </div>
-    <p class="prog-info" id="progInfo"></p>
+    <p class="info-box prog-info" id="progInfo" style="display:none"></p>
+    <p class="info-box power-info" id="powerInfo" style="display:none"></p>
+    <p class="info-box control-info" id="controlInfo" style="display:none"></p>
 
     <fieldset id="freeOpts">
-      <div class="opt"><label>Пресет</label>
-        <div class="seg" id="segPreset">
+      <div class="opt"><label>Шаблон</label>
+        <div class="seg cols5" id="segTemplate">
           <button data-v="std">Стандарт</button>
           <button data-v="fast">Быстрый</button>
           <button data-v="end">Выносливость</button>
+          <button data-v="intervals">Интервалы</button>
+          <button data-v="pyramid">Пирамида</button>
         </div>
+        <p class="template-desc" id="templateDesc" style="display:none"></p>
       </div>
       <div class="opt"><label>Циклы</label>
         <div class="seg" id="segCycles">
@@ -393,16 +496,17 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
         </div>
       </div>
       <div class="opt"><label>Напряжение, минимум <b id="minVal"></b></label>
-        <input type="range" id="minRange" min="3" max="15" step="1"></div>
+        <input type="range" id="minRange" min="3" max="20" step="1"></div>
       <div class="opt"><label>Напряжение, максимум <b id="maxVal"></b></label>
-        <input type="range" id="maxRange" min="5" max="20" step="1"></div>
+        <input type="range" id="maxRange" min="5" max="30" step="1"></div>
     </fieldset>
 
     <div class="sep"></div>
 
     <div class="opt"><label>Отдых между циклами</label>
       <div class="seg" id="segRest">
-        <button data-v="0">Нет</button><button data-v="3">3 с</button><button data-v="5">5 с</button>
+        <button data-v="0">Нет</button><button data-v="3">3 с</button>
+        <button data-v="5">5 с</button><button data-v="10">10 с</button>
       </div>
     </div>
     <div class="opt"><label>Разминка и заминка</label>
@@ -420,7 +524,7 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
         <button data-v="1">Вкл</button><button data-v="0">Выкл</button>
       </div>
     </div>
-    <div class="opt"><label>Фоновая подложка (эмбиент)</label>
+    <div class="opt"><label>Фоновая подложка</label>
       <div class="seg" id="segAmb">
         <button data-v="1">Вкл</button><button data-v="0">Выкл</button>
       </div>
@@ -443,7 +547,6 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
   </div>
 </div>
 
-<!-- История -->
 <div class="modal" id="historyModal">
   <div class="card">
     <div class="card-head"><h3>История</h3>
@@ -459,9 +562,21 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
       <div><b id="hLast">—</b><span>последняя</span></div>
     </div>
     <p class="last-session" id="lastSessionInfo"></p>
-    <div class="opt"><label>Последние сессии</label>
+
+    <div class="opt"><label>По режимам</label>
+      <div class="stats3" id="modeStats"></div>
+    </div>
+
+    <div class="opt">
+      <label>Журнал сессий</label>
+      <div class="filters" id="historyFilters">
+        <button data-filter="all" class="on">Все</button>
+        <button data-filter="week">Неделя</button>
+        <button data-filter="month">Месяц</button>
+      </div>
       <div class="log" id="logList"></div>
     </div>
+
     <div class="opt"><label>Активность за 8 недель</label>
       <div class="weeks" id="weeksChart"></div>
     </div>
@@ -474,13 +589,12 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
   </div>
 </div>
 
-<!-- Успех -->
 <div class="modal" id="doneOverlay">
   <div class="card done-card">
     <div class="celebrate"><i></i><i></i><i></i></div>
     <div class="done-badge">✓</div>
     <h2>Тренировка завершена</h2>
-    <p>Все циклы выполнены. Результат сохранён в историю.</p>
+    <p id="doneText">Все циклы выполнены. Результат сохранён в историю.</p>
     <div class="stats3">
       <div><b id="doneTotal">0</b><span>всего</span></div>
       <div><b id="doneStreak">0</b><span>серия, дн.</span></div>
@@ -496,15 +610,16 @@ input[type=time]{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,
 </div>
 
 <script>
-(() => {
+(()=>{
 'use strict';
-const HKEY='kegel_history_v1',SKEY='kegel_settings_v1',SEEN='kegel_seen_v1';
+const HKEY='kegel_history_v2',SKEY='kegel_settings_v1',SEEN='kegel_seen_v1',PKEY='kegel_power_date_v1';
 const $=id=>document.getElementById(id);
 const body=document.body;
 const statusLabel=$('statusLabel'),timeLabel=$('timeLabel'),hintLabel=$('hintLabel');
 const ringFg=$('ringFg'),barFill=$('barFill'),barTicks=$('barTicks'),cycleLabel=$('cycleLabel');
 const btnStart=$('btnStart'),btnPause=$('btnPause'),orbWrap=$('orbWrap'),aura=$('aura');
 const noteLabel=$('noteLabel'),streakChip=$('streakChip');
+const muteBtn=$('muteBtn'),powerIndicators=$('powerIndicators');
 const CIRC=2*Math.PI*46;
 ringFg.style.strokeDasharray=CIRC;
 ringFg.style.strokeDashoffset=CIRC;
@@ -512,28 +627,54 @@ ringFg.style.strokeDashoffset=CIRC;
 let state='idle',phase='prep',dur=0;
 let remainingMs=0,lastTick=0,timerId=null,sessionMs=0,warnT=null,lastCountSec=99;
 let sessionCfg=null,steps=[],si=-1,curStep=null,tensionSum=0,tensionCnt=0;
+let isPowerSession=false,currentMode='free',historyFilter='all';
+
+/* ---------- Шаблоны ---------- */
+const TEMPLATES={
+  std:{min:5,max:15,desc:'Классика: случайные длительности 5–15 секунд.'},
+  fast:{min:3,max:6,desc:'Быстрые циклы 3–6 секунд для коротких сессий.'},
+  end:{min:10,max:20,desc:'Выносливость: длинные удержания 10–20 секунд.'},
+  intervals:{min:3,max:3,desc:'Ровные интервалы: 3 секунды на каждую фазу.'},
+  pyramid:{min:5,max:15,desc:'Пирамида: длительность растёт к середине и спадает к концу.',
+    build:cycles=>{
+      const arr=[],half=Math.ceil(cycles/2);
+      for(let i=1;i<=cycles;i++){
+        const d=i<=half?5+(i-1)*2:5+(cycles-i)*2;
+        const dd=Math.min(Math.max(d,3),20);
+        arr.push({kind:'tension',dur:dd,cycle:i},{kind:'relax',dur:dd,cycle:i});
+      }
+      return arr;
+    }}
+};
 
 /* ---------- Настройки ---------- */
-const DEF={mode:'free',preset:'std',cycles:12,min:5,max:15,
+const DEF={mode:'free',template:'std',cycles:12,min:5,max:15,
   rest:0,warm:true,sound:'high',vib:true,ambient:true,remind:false,remindTime:'20:00'};
-const PRESETS={std:[5,15],fast:[3,6],end:[10,15]};
+const POWER_PATTERN=[1,3,1,2,1,3,1,2,1,3,1,2,1,3,1,2];
+
 function loadSettings(){
   try{const s=JSON.parse(localStorage.getItem(SKEY));
     return s&&typeof s==='object'?{...DEF,...s}:{...DEF};
-  }catch(e){return {...DEF};}
+  }catch(e){return{...DEF};}
 }
 let settings=loadSettings();
 function saveSettings(){try{localStorage.setItem(SKEY,JSON.stringify(settings));}catch(e){}}
+
 function programCfg(){
-  const lvl=Math.floor(histDates().length/3);
+  const lvl=Math.floor(allDates().length/3);
   return{lvl,min:Math.min(5+lvl,12),max:Math.min(8+lvl*2,18),cycles:Math.min(8+lvl*2,20)};
 }
 function getConfig(){
-  if(settings.mode==='program'){
-    const p=programCfg();
-    return{min:p.min,max:p.max,cycles:p.cycles,lvl:p.lvl};
+  switch(settings.mode){
+    case 'power':return{min:1,max:1,cycles:8,lvl:null};
+    case 'program':{const p=programCfg();return{min:p.min,max:p.max,cycles:p.cycles,lvl:p.lvl};}
+    case 'control':return{min:1,max:30,cycles:10,lvl:null};
+    case 'morning':return{min:3,max:5,cycles:6,lvl:null};
+    default:{
+      const t=TEMPLATES[settings.template]||TEMPLATES.std;
+      return{min:settings.min,max:settings.max,cycles:settings.cycles,lvl:null};
+    }
   }
-  return{min:settings.min,max:settings.max,cycles:settings.cycles,lvl:null};
 }
 
 /* ---------- Аудио ---------- */
@@ -547,7 +688,8 @@ function volMult(){return settings.sound==='off'?0:settings.sound==='low'?.5:1;}
 function beep(f,d=.15,type='sine',g=.15){
   g*=volMult();if(g<=0)return;
   const c=ctx();if(!c)return;
-  try{const o=c.createOscillator(),ga=c.createGain();
+  try{
+    const o=c.createOscillator(),ga=c.createGain();
     o.type=type;o.frequency.value=f;
     ga.gain.setValueAtTime(g,c.currentTime);
     ga.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);
@@ -555,23 +697,14 @@ function beep(f,d=.15,type='sine',g=.15){
     o.start();o.stop(c.currentTime+d+.02);
   }catch(e){}
 }
-function swellTension(){
-  beep(392,.14,'triangle',.14);
-  setTimeout(()=>beep(587.3,.3,'triangle',.16),120);
-  vib(70);
-}
-function swellRelax(){
-  beep(587.3,.2,'sine',.13);
-  setTimeout(()=>beep(293.7,.65,'sine',.13),150);
-  vib(35);
-}
+function swellTension(){beep(392,.14,'triangle',.14);setTimeout(()=>beep(587.3,.3,'triangle',.16),120);vib(70);}
+function swellRelax(){beep(587.3,.2,'sine',.13);setTimeout(()=>beep(293.7,.65,'sine',.13),150);vib(35);}
 function restSound(){beep(440,.18,'sine',.1);vib(20);}
 function prepSound(){beep(520,.12,'sine',.08);}
 function tickSound(){beep(1245,.045,'square',.06);}
 function chimeBig(){
   [523.25,659.25,783.99,1046.5].forEach((f,i)=>setTimeout(()=>{
-    beep(f,.9,'sine',.16);beep(f*2,.5,'sine',.05);
-  },i*190));
+    beep(f,.9,'sine',.16);beep(f*2,.5,'sine',.05);},i*190));
   setTimeout(()=>beep(130.8,2.4,'sine',.09),350);
 }
 
@@ -592,7 +725,7 @@ function ambientStart(){
   }catch(e){amb=null;}
 }
 function ambientPhase(k){
-  if(!amb)return;const c=ctx();const t=c.currentTime;
+  if(!amb)return;const c=ctx(),t=c.currentTime;
   if(k==='tension'){amb.f.frequency.setTargetAtTime(720,t,.5);amb.g.gain.setTargetAtTime(.06,t,.5);}
   else{amb.f.frequency.setTargetAtTime(300,t,.7);amb.g.gain.setTargetAtTime(.04,t,.7);}
 }
@@ -617,64 +750,154 @@ document.addEventListener('visibilitychange',()=>{
 /* ---------- История ---------- */
 const pad=n=>String(n).padStart(2,'0');
 const isoOf=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-function loadHist(){try{const h=JSON.parse(localStorage.getItem(HKEY));return Array.isArray(h)?h:[];}catch(e){return[];}}
-function histDates(){return loadHist().map(e=>typeof e==='string'?e:e.d);}
-function fmtDate(iso){const[y,m,d]=iso.split('-');return `${d}.${m}.${y}`;}
+const dateOf=iso=>{const[y,m,d]=iso.split('-').map(Number);return new Date(y,m-1,d);};
+
+function loadHistRaw(){
+  try{const h=JSON.parse(localStorage.getItem(HKEY));return h==null?[]:h;}catch(e){return[];}
+}
+function isOptimized(raw){return raw&&typeof raw==='object'&&!Array.isArray(raw)&&Array.isArray(raw.ranges);}
+
+function allDates(){
+  const raw=loadHistRaw();
+  if(isOptimized(raw)){
+    const dates=[];
+    raw.ranges.forEach(r=>{
+      if(!r.from||!r.to)return;
+      let d=dateOf(r.from);const end=dateOf(r.to);
+      let guard=0;
+      while(d<=end&&guard<4000){dates.push(isoOf(d));d=new Date(d);d.setDate(d.getDate()+1);guard++;}
+    });
+    const set=new Set(dates);
+    (raw.entries||[]).forEach(e=>{
+      const dd=typeof e==='string'?e:e.d;
+      if(dd&&!set.has(dd)){dates.push(dd);set.add(dd);}
+    });
+    return dates;
+  }
+  if(Array.isArray(raw))return raw.map(e=>typeof e==='string'?e:e.d).filter(Boolean);
+  return[];
+}
+
+function loadHist(){
+  const raw=loadHistRaw();
+  if(isOptimized(raw))return(raw.entries||[]).map(e=>typeof e==='string'?{d:e,mode:'free',secs:0,cycles:0,avg:0}:e);
+  if(Array.isArray(raw))return raw.map(e=>typeof e==='string'?{d:e,mode:'free',secs:0,cycles:0,avg:0}:e);
+  return[];
+}
+
+function totalCount(){
+  const raw=loadHistRaw();
+  if(isOptimized(raw))return typeof raw.total==='number'?raw.total:(raw.entries||[]).length;
+  if(Array.isArray(raw))return raw.length;
+  return 0;
+}
+
+function optimizeHistory(){
+  const entries=loadHist();
+  if(entries.length<=50)return;
+  const dates=[...new Set(allDates())].sort();
+  if(!dates.length)return;
+  const ranges=[];
+  let start=dates[0],end=dates[0];
+  for(let i=1;i<dates.length;i++){
+    const diff=Math.round((dateOf(dates[i])-dateOf(end))/86400000);
+    if(diff===1){end=dates[i];}
+    else{ranges.push({from:start,to:end});start=end=dates[i];}
+  }
+  ranges.push({from:start,to:end});
+  const optimized={ranges,entries:entries.slice(-30),total:entries.length};
+  try{localStorage.setItem(HKEY,JSON.stringify(optimized));}catch(e){}
+}
+
+const fmtDate=iso=>{const[y,m,d]=iso.split('-');return`${d}.${m}.${y}`;};
 function fmtDur(s){
-  if(s>=3600)return `${Math.floor(s/3600)} ч ${Math.floor((s%3600)/60)} мин`;
-  if(s>=60)return `${Math.floor(s/60)} мин ${s%60} с`;
-  return `${s} с`;
+  s=Math.max(0,Math.round(s));
+  if(s>=3600)return`${Math.floor(s/3600)} ч ${Math.floor((s%3600)/60)} мин`;
+  if(s>=60)return`${Math.floor(s/60)} мин ${s%60} с`;
+  return`${s} с`;
 }
+
 function saveSession(summary){
-  const h=loadHist();h.push({d:isoOf(new Date()),...summary});
-  try{localStorage.setItem(HKEY,JSON.stringify(h));}catch(e){}
+  const entries=loadHist();
+  entries.push({d:isoOf(new Date()),...summary});
+  try{localStorage.setItem(HKEY,JSON.stringify(entries));}catch(e){}
+  if(entries.length>50)optimizeHistory();
   renderHistory();
-  return h;
+  return loadHist();
 }
+
 function calcStreak(){
-  const set=new Set(histDates());let s=0;const d=new Date();
+  const set=new Set(allDates());let s=0;const d=new Date();
   if(!set.has(isoOf(d)))d.setDate(d.getDate()-1);
   while(set.has(isoOf(d))){s++;d.setDate(d.getDate()-1);}
   return s;
 }
 function bestStreak(){
-  const days=[...new Set(histDates())].sort();
+  const days=[...new Set(allDates())].sort();
   let best=0,cur=0,prev=null;
   for(const iso of days){
-    const t=new Date(iso+'T00:00:00');
-    cur=(prev&&t-prev===86400000)?cur+1:1;
-    best=Math.max(best,cur);prev=t;
+    const t=dateOf(iso);
+    cur=(prev&&Math.round((t-prev)/86400000)===1)?cur+1:1;
+    if(cur>best)best=cur;prev=t;
   }
   return best;
 }
+
+function renderModeStats(){
+  const entries=loadHist();
+  const modes={free:0,program:0,power:0,control:0,morning:0};
+  entries.forEach(e=>{if(e&&e.mode&&modes.hasOwnProperty(e.mode))modes[e.mode]++;});
+  $('modeStats').innerHTML=
+    `<div><b>${modes.free}</b><span>свободный</span></div>`+
+    `<div><b>${modes.program}</b><span>программа</span></div>`+
+    `<div><b>${modes.power}</b><span>power</span></div>`+
+    `<div><b>${modes.control}</b><span>контроль</span></div>`+
+    `<div><b>${modes.morning}</b><span>утренний</span></div>`;
+}
+
 function renderHistory(){
-  const entries=loadHist(),dates=histDates(),st=calcStreak();
+  const entries=loadHist(),st=calcStreak();
   const last=entries.length?entries[entries.length-1]:null;
-  const lastD=last?(typeof last==='string'?last:last.d):null;
-  const totCycles=entries.reduce((a,e)=>a+(typeof e==='string'?0:(e.cycles||0)),0);
-  const totSecs=entries.reduce((a,e)=>a+(typeof e==='string'?0:(e.secs||0)),0);
-  $('hTotal').textContent=entries.length;
+  const totCycles=entries.reduce((a,e)=>a+(e.cycles||0),0);
+  const totSecs=entries.reduce((a,e)=>a+(e.secs||0),0);
+  $('hTotal').textContent=totalCount();
   $('hStreak').textContent=st;
   $('hBest').textContent=bestStreak();
   $('hCycles').textContent=totCycles;
   $('hTime').textContent=fmtDur(totSecs);
-  $('hLast').textContent=lastD?fmtDate(lastD):'—';
-  $('lastSessionInfo').textContent=(last&&typeof last==='object')
+  $('hLast').textContent=last?fmtDate(last.d):'—';
+  $('lastSessionInfo').textContent=last
     ?`Последняя сессия: ${fmtDate(last.d)} · ${fmtDur(last.secs)} · среднее напряжение ${last.avg} с`
     :'Данные о сессиях появятся после первой тренировки.';
   streakChip.textContent=`Серия: ${st} дн.`;
   streakChip.classList.toggle('hot',st>=3);
+  renderModeStats();
 }
+
 function renderLog(){
   const el=$('logList');el.innerHTML='';
-  const entries=loadHist().slice(-7).reverse();
-  if(!entries.length){
-    el.innerHTML='<div class="row"><span>Сессии появятся здесь</span></div>';return;
+  let entries=loadHist().slice().reverse();
+  const now=new Date();now.setHours(0,0,0,0);
+  if(historyFilter==='week'){
+    const w=new Date(now);w.setDate(w.getDate()-7);
+    entries=entries.filter(e=>dateOf(e.d)>=w);
+  }else if(historyFilter==='month'){
+    const m=new Date(now);m.setMonth(m.getMonth()-1);
+    entries=entries.filter(e=>dateOf(e.d)>=m);
   }
-  entries.forEach(e=>{
+  if(!entries.length){
+    el.innerHTML='<div class="row"><span>Нет сессий за выбранный период</span></div>';
+    return;
+  }
+  const names={free:'Свободный',program:'Программа',power:'Power',control:'Контроль',morning:'Утренний'};
+  entries.slice(0,30).forEach(e=>{
     const r=document.createElement('div');r.className='row';
-    if(typeof e==='string')r.innerHTML=`<b>${fmtDate(e)}</b><span>—</span>`;
-    else r.innerHTML=`<b>${fmtDate(e.d)}</b><span>${e.cycles} циклов</span><span>${fmtDur(e.secs)}</span><span>ср. ${e.avg} с</span>`;
+    const mode=e.mode||'free';
+    r.innerHTML=`<b>${fmtDate(e.d)}</b>`+
+      `<span class="mode-badge ${mode}">${names[mode]||'Свободный'}</span>`+
+      `<span>${e.cycles||0} циклов</span>`+
+      `<span>${fmtDur(e.secs||0)}</span>`+
+      `<span>ср. ${e.avg||0} с</span>`;
     el.appendChild(r);
   });
 }
@@ -686,9 +909,8 @@ function renderWeeks(){
   const el=$('weeksChart');el.innerHTML='';
   const counts=new Array(8).fill(0);
   const ws=weekStart(new Date()).getTime();
-  histDates().forEach(iso=>{
-    const[y,m,d]=iso.split('-').map(Number);
-    const w=Math.round((ws-weekStart(new Date(y,m-1,d)).getTime())/604800000);
+  allDates().forEach(iso=>{
+    const w=Math.round((ws-weekStart(dateOf(iso)).getTime())/604800000);
     if(w>=0&&w<8)counts[7-w]++;
   });
   const max=Math.max(...counts,1);
@@ -696,13 +918,10 @@ function renderWeeks(){
     const d=new Date(ws-(7-i)*604800000);
     const wk=document.createElement('div');
     wk.className='wk'+(i===7?' cur':'');
-    const c=document.createElement('span');c.className='c';
-    c.textContent=counts[i]>0?counts[i]:'';
-    const b=document.createElement('span');b.className='b';
-    b.style.height=(counts[i]?Math.max(14,counts[i]/max*100):4)+'%';
-    const l=document.createElement('span');l.className='l';
-    l.textContent=`${d.getDate()}.${pad(d.getMonth()+1)}`;
-    wk.append(c,b,l);el.appendChild(wk);
+    wk.innerHTML=`<span class="c">${counts[i]||''}</span>`+
+      `<span class="b" style="height:${counts[i]?Math.max(14,counts[i]/max*100):4}%"></span>`+
+      `<span class="l">${d.getDate()}.${pad(d.getMonth()+1)}</span>`;
+    el.appendChild(wk);
   }
 }
 
@@ -711,7 +930,7 @@ const MONTHS=['Январь','Февраль','Март','Апрель','Май'
 let calY,calM;
 {const n=new Date();calY=n.getFullYear();calM=n.getMonth();}
 function renderCalendar(){
-  const set=new Set(histDates());
+  const set=new Set(allDates());
   $('calTitle').textContent=`${MONTHS[calM]} ${calY}`;
   const g=$('calGrid');g.innerHTML='';
   ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(w=>{
@@ -732,11 +951,16 @@ $('calPrev').onclick=()=>{calM--;if(calM<0){calM=11;calY--;}renderCalendar();};
 $('calNext').onclick=()=>{calM++;if(calM>11){calM=0;calY++;}renderCalendar();};
 
 /* ---------- UI настроек ---------- */
-function mark(el,v){el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));}
+function mark(el,v){el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===String(v)));}
 function bindSeg(id,fn){$(id).querySelectorAll('button').forEach(b=>
   b.addEventListener('click',()=>{fn(b.dataset.v);saveSettings();syncUI();}));}
-bindSeg('segMode',v=>settings.mode=v);
-bindSeg('segPreset',v=>{settings.preset=v;[settings.min,settings.max]=PRESETS[v];});
+
+bindSeg('segMode',v=>{settings.mode=v;});
+bindSeg('segTemplate',v=>{
+  settings.template=v;
+  const t=TEMPLATES[v];
+  if(t){settings.min=t.min;settings.max=t.max;}
+});
 bindSeg('segCycles',v=>settings.cycles=+v);
 bindSeg('segRest',v=>settings.rest=+v);
 bindSeg('segWarm',v=>settings.warm=v==='1');
@@ -746,11 +970,36 @@ bindSeg('segAmb',v=>settings.ambient=v==='1');
 bindSeg('segRemind',v=>settings.remind=v==='1');
 $('remindTime').addEventListener('change',e=>{settings.remindTime=e.target.value;saveSettings();});
 
+function checkPowerLock(){
+  return localStorage.getItem(PKEY)===new Date().toDateString();
+}
+
+function updateMuteIcon(){
+  const svg=$('muteIcon');
+  const waves=svg.querySelectorAll('.snd-wave');
+  const old=svg.querySelector('.mute-slash');
+  if(settings.sound==='off'){
+    muteBtn.classList.add('muted');
+    waves.forEach(w=>w.style.display='none');
+    if(!old){
+      const slash=document.createElementNS('http://www.w3.org/2000/svg','line');
+      slash.setAttribute('x1','4');slash.setAttribute('y1','4');
+      slash.setAttribute('x2','20');slash.setAttribute('y2','20');
+      slash.setAttribute('class','mute-slash');
+      svg.appendChild(slash);
+    }
+  }else{
+    muteBtn.classList.remove('muted');
+    waves.forEach(w=>w.style.display='');
+    if(old)old.remove();
+  }
+}
+
 function syncUI(){
   mark($('segMode'),settings.mode);
-  mark($('segPreset'),settings.preset);
-  mark($('segCycles'),String(settings.cycles));
-  mark($('segRest'),String(settings.rest));
+  mark($('segTemplate'),settings.template);
+  mark($('segCycles'),settings.cycles);
+  mark($('segRest'),settings.rest);
   mark($('segWarm'),settings.warm?'1':'0');
   mark($('segSound'),settings.sound);
   mark($('segVib'),settings.vib?'1':'0');
@@ -759,36 +1008,64 @@ function syncUI(){
   $('remindTime').value=settings.remindTime;
   $('minRange').value=settings.min;$('maxRange').value=settings.max;
   $('minVal').textContent=settings.min+' с';$('maxVal').textContent=settings.max+' с';
-  $('freeOpts').disabled=settings.mode==='program';
-  const pi=$('progInfo');
+
+  const advanced=settings.mode!=='free';
+  $('freeOpts').disabled=advanced;
+
+  const pi=$('progInfo'),pw=$('powerInfo'),ci=$('controlInfo'),td=$('templateDesc');
+  pi.style.display='none';pw.style.display='none';ci.style.display='none';td.style.display='none';
+  $('btnPower').disabled=false;
+
   if(settings.mode==='program'){
     const p=programCfg();
     pi.style.display='block';
     pi.textContent=`Уровень ${p.lvl}: напряжение ${p.min}–${p.max} с, циклов: ${p.cycles}. Сложность растёт каждые 3 тренировки.`;
-  }else pi.style.display='none';
+  }else if(settings.mode==='power'){
+    pw.style.display='block';
+    if(checkPowerLock()){
+      pw.textContent='Режим заблокирован до завтра. Мышцам нужен отдых.';
+      $('btnPower').disabled=true;
+    }else{
+      pw.textContent='8 быстрых импульсов: 1 с зажим + 2–3 с расслабление. Доступен раз в день.';
+    }
+  }else if(settings.mode==='control'){
+    ci.style.display='block';
+    ci.textContent='Случайные длительности от 1 до 30 секунд. Тренирует реакцию и контроль.';
+  }else if(settings.mode==='morning'){
+    ci.style.display='block';
+    ci.textContent='Мягкая утренняя сессия: 6 циклов по 3–5 секунд, около 3–5 минут.';
+  }else{
+    const t=TEMPLATES[settings.template];
+    if(t){td.style.display='block';td.textContent=t.desc;}
+  }
+
   updPermBtn();
+  updateMuteIcon();
   if(state==='idle')updateIdle();
 }
+
 $('minRange').addEventListener('input',e=>{
   settings.min=+e.target.value;
   if(settings.min>settings.max)settings.max=settings.min;
-  settings.preset='custom';saveSettings();syncUI();
+  saveSettings();syncUI();
 });
 $('maxRange').addEventListener('input',e=>{
   settings.max=+e.target.value;
   if(settings.max<settings.min)settings.min=settings.max;
-  settings.preset='custom';saveSettings();syncUI();
+  saveSettings();syncUI();
 });
 
 /* ---------- Напоминания ---------- */
 function updPermBtn(){
   const b=$('permBtn');
   if(!('Notification' in window)){b.textContent='Не поддерживается';b.disabled=true;return;}
-  b.textContent={granted:'Разрешено',denied:'Запрещено',default:'Выдать разрешение'}[Notification.permission];
-  b.disabled=Notification.permission!=='default';
+  const st=Notification.permission;
+  b.textContent=st==='granted'?'Разрешено':st==='denied'?'Запрещено':'Выдать разрешение';
+  b.disabled=st!=='default';
 }
 $('permBtn').onclick=()=>{
-  if('Notification' in window)Notification.requestPermission().then(updPermBtn);
+  if('Notification' in window&&Notification.permission==='default')
+    Notification.requestPermission().then(updPermBtn);
 };
 let lastRemindDay='';
 setInterval(()=>{
@@ -796,62 +1073,120 @@ setInterval(()=>{
   if(Notification.permission!=='granted')return;
   if(state==='running'||state==='paused')return;
   const n=new Date();
-  const hm=pad(n.getHours())+':'+pad(n.getMinutes());
-  const day=isoOf(n);
-  if(hm===settings.remindTime&&lastRemindDay!==day){
-    lastRemindDay=day;
-    try{new Notification('Кегель-таймер',
-      {body:'Пора тренироваться. Откройте приложение и нажмите «Старт».'});}catch(e){}
+  if(pad(n.getHours())+':'+pad(n.getMinutes())===settings.remindTime&&lastRemindDay!==isoOf(n)){
+    lastRemindDay=isoOf(n);
+    try{new Notification('Кегель-таймер',{body:'Пора тренироваться. Нажмите «Старт».'});}catch(e){}
   }
 },15000);
 
 /* ---------- Шаги сессии ---------- */
-function rndDur(){const c=sessionCfg;
-  return c.min+Math.floor(Math.random()*(c.max-c.min+1));}
-function isRelaxLike(k){return k==='relax'||k==='cooldown';}
+function rndDur(){
+  if(settings.mode==='control')return 1+Math.floor(Math.random()*30);
+  const c=sessionCfg;
+  return c.min+Math.floor(Math.random()*(c.max-c.min+1));
+}
+const isRelaxLike=k=>k==='relax'||k==='cooldown';
+
 function buildSteps(){
   steps=[{kind:'prep',dur:3,cycle:0}];
   const c=sessionCfg;
+
+  if(settings.mode==='power'){
+    for(let i=0;i<POWER_PATTERN.length;i+=2){
+      const n=Math.floor(i/2)+1;
+      steps.push({kind:'tension',dur:POWER_PATTERN[i],cycle:n});
+      steps.push({kind:'relax',dur:POWER_PATTERN[i+1],cycle:n,isFinal:i===POWER_PATTERN.length-2});
+    }
+    return;
+  }
+
   if(settings.warm)steps.push(
     {kind:'tension',dur:4,cycle:0,label:'Разминка'},
     {kind:'relax',dur:6,cycle:0,label:'Разминка'});
-  for(let i=1;i<=c.cycles;i++){
-    const t=rndDur();
-    steps.push({kind:'tension',dur:t,cycle:i},{kind:'relax',dur:t,cycle:i});
-    if(settings.rest>0&&i<c.cycles)steps.push({kind:'rest',dur:settings.rest,cycle:i});
+
+  const t=TEMPLATES[settings.template];
+  let core;
+  if(settings.mode==='free'&&t&&t.build){
+    core=t.build(c.cycles);
+  }else{
+    core=[];
+    for(let i=1;i<=c.cycles;i++){
+      const d=rndDur();
+      core.push({kind:'tension',dur:d,cycle:i},{kind:'relax',dur:d,cycle:i});
+    }
   }
+  core.forEach((s,idx)=>{
+    steps.push(s);
+    if(s.kind==='relax'&&idx+1<core.length&&settings.rest>0&&core[idx+1].kind==='tension'){
+      steps.push({kind:'rest',dur:settings.rest,cycle:s.cycle});
+    }
+  });
+  const lastRelax=[...core].reverse().find(s=>s.kind==='relax');
+  if(lastRelax)lastRelax.isFinal=true;
+
   if(settings.warm)steps.push({kind:'cooldown',dur:12,cycle:c.cycles});
 }
+
 function setBodyPhase(k){
-  body.classList.toggle('tense',k==='tension');
-  body.classList.toggle('relax',isRelaxLike(k));
+  body.classList.toggle('tense',k==='tension'&&!isPowerSession);
+  body.classList.toggle('relax',isRelaxLike(k)&&!isPowerSession);
   body.classList.toggle('rest',k==='rest');
   body.classList.toggle('prep',k==='prep');
+  body.classList.toggle('power',k==='tension'&&isPowerSession);
+  body.classList.toggle('final',(k==='relax'&&isPowerSession)||body.classList.contains('final'));
 }
+
+const STATUS={prep:'Приготовьтесь',tension:'Напряжение',relax:'Расслабление',rest:'Отдых',cooldown:'Заминка'};
+const HINTS={prep:'Займите удобное положение',tension:'Сжимайте мышцы',
+  relax:'Расслабьтесь · дышите в ритме кольца',
+  rest:'Отдохните и приготовьтесь',
+  cooldown:'Глубокое расслабление'};
+
 function phaseSound(k){
   if(k==='tension')swellTension();
   else if(isRelaxLike(k))swellRelax();
   else if(k==='rest')restSound();
   else prepSound();
 }
-const STATUS={prep:'Приготовьтесь',tension:'Напряжение',relax:'Расслабление',rest:'Отдых',cooldown:'Заминка'};
-const HINTS={prep:'Займите удобное положение',tension:'Сжимайте мышцы',
-  relax:'Расслабьтесь · дышите в ритме кольца',
-  rest:'Отдохните и приготовьтесь',
-  cooldown:'Глубокое расслабление'};
+
+function updatePowerIndicators(){
+  powerIndicators.innerHTML='';
+  if(!isPowerSession)return;
+  const total=8,current=curStep?curStep.cycle:0;
+  for(let i=1;i<=total;i++){
+    const s=document.createElement('span');
+    if(i<current)s.className='done';
+    else if(i===current)s.className='active';
+    powerIndicators.appendChild(s);
+  }
+}
+
 function beginStep(i,carry,silent){
   si=i;curStep=steps[i];
   phase=curStep.kind;dur=curStep.dur;
   remainingMs=dur*1000-carry;
   lastCountSec=99;
   if(phase==='tension'){tensionSum+=dur;tensionCnt++;}
+  body.classList.remove('final');
   setBodyPhase(phase);
   ambientPhase(phase);
   orbWrap.classList.remove('warn');
   if(!silent)phaseSound(phase);
-  statusLabel.textContent=STATUS[phase];
-  hintLabel.textContent=HINTS[phase];
+  updatePowerIndicators();
+
+  if(curStep.isFinal&&phase==='relax'){
+    dur=3;remainingMs=3000;
+    statusLabel.textContent='Финал';
+    hintLabel.textContent='Полностью расслабьте мышцы и сделайте глубокий выдох';
+    hintLabel.classList.add('final');
+    body.classList.add('final');
+  }else{
+    statusLabel.textContent=STATUS[phase];
+    hintLabel.textContent=HINTS[phase];
+    hintLabel.classList.remove('final');
+  }
 }
+
 function warnFlash(){
   orbWrap.classList.add('warn');
   clearTimeout(warnT);
@@ -860,28 +1195,40 @@ function warnFlash(){
 
 function render(){
   const total=dur*1000,elapsed=total-remainingMs;
-  const sec=phase==='tension'
-    ?Math.min(dur,Math.floor(elapsed/1000))
-    :Math.max(0,Math.ceil(remainingMs/1000));
-  timeLabel.textContent=sec+'с';
   const prog=Math.min(1,Math.max(0,elapsed/total));
-  ringFg.style.strokeDashoffset=CIRC*(1-prog);
+
+  if(isPowerSession&&phase==='tension'){
+    timeLabel.textContent='СЖАТИЕ';
+    timeLabel.classList.add('text-mode');
+    orbWrap.classList.remove('counting');
+    ringFg.style.strokeDashoffset=CIRC*(1-prog);
+  }else{
+    timeLabel.classList.remove('text-mode');
+    const sec=phase==='tension'
+      ?Math.min(dur,Math.floor(elapsed/1000))
+      :Math.max(0,Math.ceil(remainingMs/1000));
+    timeLabel.textContent=sec+'с';
+    ringFg.style.strokeDashoffset=CIRC*(1-prog);
+    orbWrap.classList.toggle('counting',remainingMs<=3000);
+  }
+
   aura.style.opacity=(.3+prog*.4).toFixed(2);
-  orbWrap.classList.toggle('counting',remainingMs<=3000);
   const n=sessionCfg.cycles;
   let sp,lbl;
   if(phase==='prep'){sp=0;lbl='Приготовление';}
   else if(phase==='cooldown'){sp=1;lbl='Заминка';}
-  else if(curStep.cycle===0){sp=0;lbl=curStep.label;}
+  else if(curStep.cycle===0){sp=0;lbl=curStep.label||'Разминка';}
   else if(phase==='rest'){sp=curStep.cycle/n;lbl='Отдых';}
   else{
-    const c=curStep.cycle;
-    sp=phase==='tension'?(c-1+prog*.5)/n:(c-.5+prog*.5)/n;
-    lbl=`Цикл: ${c} / ${n}`;
+    const cc=curStep.cycle;
+    sp=phase==='tension'?(cc-1+prog*.5)/n:(cc-.5+prog*.5)/n;
+    lbl=isPowerSession?`Импульс ${cc} / ${n}`:`Цикл: ${cc} / ${n}`;
   }
-  barFill.style.width=(state==='done'?100:sp*100)+'%';
+  barFill.style.width=(state==='done'?100:sp*100).toFixed(1)+'%';
   cycleLabel.textContent=lbl;
-  document.title=`${sec}с · ${STATUS[phase]}`;
+  document.title=(isPowerSession&&phase==='tension')
+    ?'СЖАТИЕ · '+STATUS[phase]
+    :timeLabel.textContent+' · '+STATUS[phase];
 }
 
 function tick(){
@@ -909,23 +1256,45 @@ function buildTicks(n){
   barTicks.style.background=
     `repeating-linear-gradient(90deg,transparent 0,transparent calc(${p} - 2px),rgba(18,18,18,.9) calc(${p} - 2px),rgba(18,18,18,.9) ${p})`;
 }
+
 function updateIdle(){
   const c=getConfig();
   timeLabel.textContent=c.cycles+'×';
-  hintLabel.textContent=settings.mode==='program'
-    ?`Программа · уровень ${c.lvl}`:'Нажмите «Старт», чтобы начать';
+  timeLabel.classList.remove('text-mode');
+  hintLabel.classList.remove('final');
+  let hint;
+  switch(settings.mode){
+    case 'program':hint=`Программа · уровень ${c.lvl}`;break;
+    case 'power':hint='Power Mode · 8 импульсов';break;
+    case 'control':hint='Случайные длительности · реакция';break;
+    case 'morning':hint='Мягкая утренняя сессия';break;
+    default:{
+      const t=TEMPLATES[settings.template]||TEMPLATES.std;
+      hint=(t.build?'Пирамида':'Свободный режим')+` · ${c.cycles} циклов`;
+    }
+  }
+  hintLabel.textContent=hint;
   let note=`${c.cycles} циклов · напряжение ${c.min}–${c.max} с`;
   if(settings.rest>0)note+=` · отдых ${settings.rest} с`;
   if(settings.warm)note+=' · разминка';
   noteLabel.textContent=note;
   cycleLabel.textContent=`Цикл: 0 / ${c.cycles}`;
   buildTicks(c.cycles);
+  powerIndicators.innerHTML='';
+  orbWrap.classList.remove('counting','warn');
 }
+
 function startSession(){
+  if(settings.mode==='power'&&checkPowerLock()){
+    syncUI();
+    return;
+  }
   ctx();beep(880,.08,'sine',.08);
   sessionCfg=getConfig();
+  isPowerSession=settings.mode==='power';
+  currentMode=settings.mode;
   state='running';sessionMs=0;tensionSum=0;tensionCnt=0;
-  body.classList.remove('resetting','paused');
+  body.classList.remove('resetting','paused','final');
   btnStart.textContent='Сбросить';btnStart.classList.add('danger');
   btnPause.disabled=false;btnPause.textContent='Пауза';
   buildTicks(sessionCfg.cycles);
@@ -937,7 +1306,9 @@ function startSession(){
   clearInterval(timerId);
   timerId=setInterval(tick,100);
 }
+
 function pause(){
+  if(state!=='running')return;
   state='paused';
   clearInterval(timerId);timerId=null;
   body.classList.add('paused');
@@ -945,7 +1316,9 @@ function pause(){
   beep(200,.09,'sine',.07);
   setTimeout(()=>{try{if(AC&&AC.state==='running')AC.suspend();}catch(e){}},220);
 }
+
 function resume(){
+  if(state!=='paused')return;
   state='running';
   body.classList.remove('paused');
   btnPause.textContent='Пауза';
@@ -954,23 +1327,27 @@ function resume(){
   lastTick=performance.now();
   timerId=setInterval(tick,100);
 }
+
 function resetSession(){
   clearInterval(timerId);timerId=null;
   clearTimeout(warnT);
   releaseWake();
   ambientStop();
-  state='idle';si=-1;curStep=null;
-  body.classList.remove('tense','relax','rest','prep','paused','counting','warn');
+  state='idle';si=-1;curStep=null;isPowerSession=false;
+  body.classList.remove('tense','relax','rest','prep','paused','counting','warn','power','final');
   body.classList.add('resetting');
   btnStart.textContent='Старт';btnStart.classList.remove('danger');
   btnPause.disabled=true;btnPause.textContent='Пауза';
   statusLabel.textContent='Готовы?';
+  hintLabel.classList.remove('final');
+  timeLabel.classList.remove('text-mode');
   barFill.style.width='0%';
   ringFg.style.strokeDashoffset=CIRC;
   aura.style.opacity=.3;
   document.title='Кегель-таймер';
   updateIdle();
 }
+
 function finish(){
   clearInterval(timerId);timerId=null;
   clearTimeout(warnT);
@@ -978,35 +1355,55 @@ function finish(){
   ambientStop();
   try{AC&&AC.resume();}catch(e){}
   state='done';
-  setBodyPhase('cooldown');
-  body.classList.remove('prep');
+  body.classList.remove('tense','power','prep','rest');
+  body.classList.add('relax');
   chimeBig();vib([90,60,90,60,140]);
+
   const secs=Math.round(sessionMs/1000);
   const avg=tensionCnt?+(tensionSum/tensionCnt).toFixed(1):0;
-  const entries=saveSession({secs,avg,cycles:sessionCfg.cycles,mode:settings.mode});
+  saveSession({secs,avg,cycles:sessionCfg.cycles,mode:currentMode});
+  const entries=loadHist();
+
+  if(isPowerSession){
+    try{localStorage.setItem(PKEY,new Date().toDateString());}catch(e){}
+    $('doneText').textContent='Power Mode выполнен. Мышцам нужен отдых до завтра.';
+  }else{
+    $('doneText').textContent='Все циклы выполнены. Результат сохранён в историю.';
+  }
+
   statusLabel.textContent='Готово';
   timeLabel.textContent=`${sessionCfg.cycles}/${sessionCfg.cycles}`;
+  timeLabel.classList.remove('text-mode');
   hintLabel.textContent='Отличная работа';
+  hintLabel.classList.remove('final');
   barFill.style.width='100%';
   cycleLabel.textContent='Сессия выполнена';
   btnPause.disabled=true;
   btnStart.textContent='Старт';btnStart.classList.remove('danger');
-  const prevObj=(()=>{for(let i=entries.length-2;i>=0;i--){
-    if(typeof entries[i]==='object'&&typeof entries[i].avg==='number')return entries[i];}return null;})();
-  $('doneTotal').textContent=entries.length;
+  powerIndicators.innerHTML='';
+
+  $('doneTotal').textContent=totalCount();
   $('doneStreak').textContent=calcStreak();
-  const lastD=entries[entries.length-1];
-  $('doneLast').textContent=fmtDate(typeof lastD==='string'?lastD:lastD.d);
+  const lastD=entries.length?entries[entries.length-1].d:null;
+  $('doneLast').textContent=lastD?fmtDate(lastD):'—';
   $('doneDur').textContent=fmtDur(secs);
   $('doneAvg').textContent=avg+' с';
-  if(prevObj){
-    const diff=+(avg-prevObj.avg).toFixed(1);
+
+  let prev=null;
+  for(let i=entries.length-2;i>=0;i--){
+    if(typeof entries[i].avg==='number'){prev=entries[i];break;}
+  }
+  if(prev){
+    const diff=+(avg-prev.avg).toFixed(1);
     $('doneCmp').textContent=Math.abs(diff)<0.05
-      ?`Среднее напряжение как в прошлый раз (${prevObj.avg} с)`
+      ?`Среднее напряжение как в прошлый раз (${prev.avg} с)`
       :`Среднее напряжение на ${Math.abs(diff)} с ${diff>0?'дольнее':'короче'}, чем в прошлый раз`;
-  }else $('doneCmp').textContent='Первая сессия в статистике.';
+  }else{
+    $('doneCmp').textContent='Первая сессия в статистике.';
+  }
   $('doneOverlay').classList.add('show');
   document.title='Готово · Кегель-таймер';
+  isPowerSession=false;
 }
 
 btnStart.addEventListener('click',()=>{
@@ -1020,7 +1417,15 @@ $('btnDone').addEventListener('click',()=>{
   resetSession();
 });
 
-/* Двойной тап — пауза */
+/* Живой мут */
+muteBtn.addEventListener('click',()=>{
+  const order=['off','low','high'];
+  settings.sound=order[(order.indexOf(settings.sound)+1)%order.length];
+  saveSettings();
+  updateMuteIcon();
+});
+
+/* Двойной тап */
 let lastTap=0;
 orbWrap.addEventListener('pointerup',()=>{
   if(anyModal())return;
@@ -1032,20 +1437,22 @@ orbWrap.addEventListener('pointerup',()=>{
   lastTap=now;
 });
 
-/* Горячие клавиши */
-function anyModal(){return !!document.querySelector('.modal.show');}
+/* Клавиши */
+function anyModal(){return!!document.querySelector('.modal.show');}
 function toggleFS(){
-  if(!document.fullscreenElement)
+  if(!document.fullscreenElement){
     document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{});
-  else document.exitFullscreen&&document.exitFullscreen();
+  }else{
+    document.exitFullscreen&&document.exitFullscreen().catch(()=>{});
+  }
 }
 function markSeen(){try{localStorage.setItem(SEEN,'1');}catch(e){}}
 document.addEventListener('keydown',e=>{
-  if(e.target&&(e.target.tagName==='INPUT'))return;
+  if(e.target&&e.target.tagName==='INPUT')return;
   if(e.key==='Escape'){
     const m=document.querySelector('.modal.show');
     if(m){
-      if(m.id==='doneOverlay'){$('btnDone').click();}
+      if(m.id==='doneOverlay')$('btnDone').click();
       else{m.classList.remove('show');if(m.id==='introModal')markSeen();}
     }
     return;
@@ -1057,23 +1464,35 @@ document.addEventListener('keydown',e=>{
     resetSession();
   }else if((k==='f'||k==='а')&&!anyModal()){
     toggleFS();
+  }else if((k==='m'||k==='ь')&&!anyModal()){
+    muteBtn.click();
   }
 });
 
-/* ---------- Модальные окна ---------- */
+/* Фильтры истории */
+$('historyFilters').addEventListener('click',e=>{
+  const b=e.target.closest('button');
+  if(!b)return;
+  historyFilter=b.dataset.filter;
+  $('historyFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));
+  renderLog();
+});
+
+/* Модалки */
 function openModal(el){el.classList.add('show');}
 document.querySelectorAll('[data-close]').forEach(b=>
   b.addEventListener('click',()=>{
     const m=b.closest('.modal');
     m.classList.remove('show');
     if(m.id==='introModal')markSeen();
+    if(m.id==='settingsModal'&&state==='idle')updateIdle();
   }));
 $('setBtn').onclick=()=>{syncUI();openModal($('settingsModal'));};
 $('histBtn').onclick=()=>{renderHistory();renderLog();renderWeeks();renderCalendar();openModal($('historyModal'));};
 $('helpBtn').onclick=()=>openModal($('introModal'));
 $('fsBtn').onclick=toggleFS;
 
-/* ---------- Частицы ---------- */
+/* Частицы */
 {
   const pc=$('particles');
   for(let i=0;i<16;i++){
@@ -1088,7 +1507,20 @@ $('fsBtn').onclick=toggleFS;
   }
 }
 
-/* ---------- Старт приложения ---------- */
+/* PWA */
+if('serviceWorker' in navigator&&location.protocol!=='file:'){
+  const sw=`const C='kegel-v2';self.addEventListener('install',e=>{self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>clients.claim()));});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;
+e.respondWith(caches.open(C).then(c=>c.match(e.request).then(r=>r||fetch(e.request).then(res=>{
+if(res&&res.status===200)c.put(e.request,res.clone());return res;}).catch(()=>r)));});`;
+  try{
+    const url=URL.createObjectURL(new Blob([sw],{type:'application/javascript'}));
+    navigator.serviceWorker.register(url).catch(()=>{});
+  }catch(e){}
+}
+
+/* Старт */
 renderHistory();
 syncUI();
 updateIdle();
